@@ -42,3 +42,4 @@ next-env.d.ts
 
 contracts/invoice-factoring/target/
 git-commit-10.ps1
+git-commit-remaining.ps1
