@@ -1,0 +1,88 @@
+datasource db {
+  provider = "postgresql"
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum Role {
+  BUSINESS
+  INVESTOR
+  ADMIN
+}
+
+enum InvoiceStatus {
+  DRAFT
+  PUBLISHED
+  PARTIALLY_FUNDED
+  FULLY_FUNDED
+  AWAITING_PAYMENT
+  PAID
+  COMPLETED
+  CANCELLED
+}
+
+model User {
+  id            String        @id @default(uuid())
+  walletAddress String        @unique
+  role          Role          @default(INVESTOR)
+  name          String?
+  email         String?
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+  invoices      Invoice[]     @relation("BusinessInvoices")
+  investments   Investment[]
+  activities    ActivityLog[]
+}
+
+model Invoice {
+  id                String        @id @default(uuid())
+  contractInvoiceId String        @unique // Matching invoice ID on Stellar
+  businessId        String
+  business          User          @relation("BusinessInvoices", fields: [businessId], references: [id])
+  debtorName        String
+  debtorEmail       String
+  amount            Float
+  fundingGoal       Float
+  currentFunding    Float         @default(0)
+  interestRate      Float // percentage (e.g. 5.5 = 5.5%)
+  dueDate           DateTime
+  status            InvoiceStatus @default(DRAFT)
+  pdfUrl            String?
+  txHash            String?
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+  investments       Investment[]
+}
+
+model Investment {
+  id         String   @id @default(uuid())
+  invoiceId  String
+  invoice    Invoice  @relation(fields: [invoiceId], references: [id])
+  investorId String
+  investor   User     @relation(fields: [investorId], references: [id])
+  amount     Float
+  txHash     String?
+  withdrawn  Boolean  @default(false)
+  createdAt  DateTime @default(now())
+}
+
+model Transaction {
+  id        String   @id @default(uuid())
+  txHash    String   @unique
+  type      String // "CREATE", "FUND", "REPAY", "WITHDRAW", "CANCEL"
+  amount    Float
+  sender    String
+  status    String // "PENDING", "SUCCESS", "FAILED"
+  timestamp DateTime @default(now())
+}
+
+model ActivityLog {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  action    String
+  details   String
+  createdAt DateTime @default(now())
+}
