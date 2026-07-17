@@ -25,9 +25,10 @@ A production-ready, decentralized marketplace built on **Stellar Soroban** and *
 
 ## 🌐 Live Demo & Deployment Info
 
-- **Live Demo:** [https://factora-app.vercel.app](https://factora-app.vercel.app) *(Placeholder)*
-- **Contract Address (Testnet):** `CDEOSMERYZ3576U5FWEWDDCEPWNEHHKSH7VJOVPVGUC2H7RSW4X3MBP4`
-- **Example Transaction Hash:** `6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2c3d4e5f6a7b` *(Placeholder)*
+- **Video Demo (Level 3):** [YouTube Demo Link Here](#) *(Replace with actual link)*
+- **Live Platform:** [https://factora-app.vercel.app](https://factora-app.vercel.app) *(Placeholder)*
+- **Invoice Factoring Contract (Testnet):** `CDJGXXABINDCQH6ZP35S2V6WFXEK2O5LINUUMWOJDPAKMWY2Q5WETGFB`
+- **Admin Registry Contract (Testnet):** `CCESJJH4JPAUP7J6Z57JUTKJEQSDPUMFICTLXHCEY7CVGGJRUMZZF5GC`
 
 ---
 
@@ -118,21 +119,29 @@ Open [http://localhost:3000](http://localhost:3000) to view the application.
 
 ## 🦀 Soroban Smart Contract Architecture
 
-The invoice factoring contract is written in Rust and implements the following interface:
+The project employs **Inter-Contract Communication (ICC)** between two deployed smart contracts:
 
-- `initialize(admin: Address, token: Address)`: Registers the contract admin and USDC payment token.
-- `create_invoice(id: Symbol, business: Address, amount: i128, interest: u32, funding_goal: i128, due_date: u64)`: Tokenizes a new invoice. Only callable by the invoice issuer.
-- `fund_invoice(id: Symbol, investor: Address, amount: i128)`: Deposits stablecoins into the factoring escrow. Automatically transfers capital to the business when fully funded.
-- `cancel_invoice(id: Symbol)`: Cancels the invoice listing and refunds all investors (only if published/partially funded).
-- `mark_paid(id: Symbol, payer: Address)`: Repays the invoice principal plus the offered yield interest.
-- `withdraw_return(id: Symbol, investor: Address)`: Claims return payout (principal + interest yield) for an investor.
-- `get_invoice(id: Symbol)`: Fetches invoice details from ledger storage.
-- `get_all_invoices()`: Lists all invoices.
+1. **Admin Registry Contract**: Manages a verified whitelist of business wallets.
+2. **Invoice Factoring Contract**: The core financial escrow. During `create_invoice`, it invokes the Admin Registry (`env.invoke_contract()`) to verify the business's authorization before tokenizing the invoice.
 
-### Running Contract Tests
+### Invoice Factoring Interface
+
+- `initialize(admin: Address, token: Address, registry: Address)`: Registers the contract admin, USDC token, and Admin Registry address.
+- `create_invoice(...)`: Tokenizes a new invoice. Verifies the business via ICC. Includes TTL storage bumping.
+- `fund_invoice(id: Symbol, investor: Address, amount: i128)`: Deposits stablecoins into escrow.
+- `cancel_invoice(id: Symbol)`: Cancels the invoice listing.
+- `mark_paid(id: Symbol, payer: Address)`: Repays the principal + interest.
+- `withdraw_return(id: Symbol, investor: Address)`: Claims return payout.
+
+### Running Tests (CI/CD Integrated)
+We enforce quality via **GitHub Actions** (`.github/workflows/ci.yml`). To run tests locally:
 ```bash
-cd contracts/invoice-factoring
-cargo test
+# Contract Tests
+cd contracts/invoice-factoring && cargo test
+cd contracts/admin-registry && cargo test
+
+# Frontend & Integration Tests
+npm test
 ```
 
 ---
@@ -153,6 +162,23 @@ cargo test
    - Funding simulated invoices.
    - Claiming mock USDC from the **Faucet** button in the navbar.
    - Settling invoices as the Business and claiming returns as the Investor.
+
+---
+
+## ⚠️ Known Limitations
+- **Stablecoin Standard**: Currently hardcoded to a mock USDC asset.
+- **Oracle Integrations**: Real-world FIAT conversion rates are not currently streamed via Oracle.
+- **Frontend Subscriptions**: UI updates rely on TanStack Query polling (`refetchInterval: 5000`) rather than native WebSocket events due to current RPC limitations.
+
+---
+
+## 🤝 Contributing
+Contributions are welcome for Level 4 (Black Belt) improvements!
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add amazing feature'`)
+4. Ensure CI/CD passes (Run `npm test` and `cargo test`)
+5. Push to the branch and open a Pull Request.
 
 ---
 
