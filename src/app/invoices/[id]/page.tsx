@@ -120,8 +120,8 @@ export default function InvoiceDetails() {
       <div className="flex flex-col min-h-screen">
         <Navbar />
         <main className="flex-grow max-w-3xl w-full mx-auto px-4 py-16 space-y-6">
-          <div className="h-4 w-20 bg-white/5 rounded animate-pulse" />
-          <div className="h-64 rounded-xl border border-white/5 bg-card animate-pulse" />
+          <div className="h-4 w-20 bg-muted rounded animate-pulse" />
+          <div className="h-64 rounded-xl border border-border bg-card animate-pulse" />
         </main>
         <Footer />
       </div>
@@ -134,8 +134,8 @@ export default function InvoiceDetails() {
         <Navbar />
         <main className="flex-grow flex items-center justify-center">
           <div className="text-center space-y-3">
-            <h3 className="text-xl font-bold text-white">Invoice Not Found</h3>
-            <Link href="/dashboard" className="text-sm text-violet-400 hover:underline">
+            <h3 className="text-xl font-bold text-foreground">Invoice Not Found</h3>
+            <Link href="/dashboard" className="text-sm text-primary hover:underline">
               Back to Dashboard
             </Link>
           </div>
@@ -157,7 +157,7 @@ export default function InvoiceDetails() {
     FULLY_FUNDED: 'bg-indigo-500/10 text-indigo-400 border-indigo-500/20',
     AWAITING_PAYMENT: 'bg-purple-500/10 text-purple-400 border-purple-500/20',
     PAID: 'bg-teal-500/10 text-teal-400 border-teal-500/20',
-    COMPLETED: 'bg-violet-500/10 text-violet-400 border-violet-500/20',
+    COMPLETED: 'bg-primary/10 text-primary border-primary/20',
     CANCELLED: 'bg-rose-500/10 text-rose-400 border-rose-500/20',
   };
 
@@ -167,7 +167,7 @@ export default function InvoiceDetails() {
 
       <main className="flex-grow max-w-5xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
         <div>
-          <Link href="/dashboard" className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-white transition-colors">
+          <Link href="/dashboard" className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors">
             <ArrowLeft className="w-3.5 h-3.5" />
             Back to Dashboard
           </Link>
@@ -176,14 +176,14 @@ export default function InvoiceDetails() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Main Details Panel */}
           <div className="lg:col-span-2 space-y-6">
-            <div className="glass-panel rounded-xl border border-white/10 p-6 md:p-8 space-y-6">
+            <div className="glass-panel rounded-xl border border-border p-6 md:p-8 space-y-6">
               {/* Header block */}
-              <div className="flex justify-between items-start gap-4 border-b border-white/5 pb-5">
+              <div className="flex justify-between items-start gap-4 border-b border-border pb-5">
                 <div className="space-y-1">
-                  <span className="text-xxs font-semibold text-violet-400 font-mono tracking-wider uppercase">
+                  <span className="text-xxs font-semibold text-primary font-mono tracking-wider uppercase">
                     Escrow ID: {invoice.contractInvoiceId}
                   </span>
-                  <h1 className="text-2xl font-bold text-white tracking-tight">{invoice.debtorName}</h1>
+                  <h1 className="text-2xl font-bold text-foreground tracking-tight">{invoice.debtorName}</h1>
                   <p className="text-xs text-muted-foreground">Debtor Billing: {invoice.debtorEmail}</p>
                 </div>
                 <span className={`text-xs font-bold border px-3 py-1 rounded-full ${statusColors[invoice.status]}`}>
@@ -195,11 +195,11 @@ export default function InvoiceDetails() {
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-6 text-sm">
                 <div>
                   <span className="text-xxs text-muted-foreground block mb-0.5">Face Value</span>
-                  <span className="text-lg font-bold text-white">${invoice.amount.toLocaleString()}</span>
+                  <span className="text-lg font-bold text-foreground">${invoice.amount.toLocaleString()}</span>
                 </div>
                 <div>
                   <span className="text-xxs text-muted-foreground block mb-0.5">Financing Goal</span>
-                  <span className="text-lg font-bold text-white">${invoice.fundingGoal.toLocaleString()}</span>
+                  <span className="text-lg font-bold text-foreground">${invoice.fundingGoal.toLocaleString()}</span>
                 </div>
                 <div>
                   <span className="text-xxs text-muted-foreground block mb-0.5">Yield Offered</span>
@@ -207,17 +207,17 @@ export default function InvoiceDetails() {
                 </div>
                 <div>
                   <span className="text-xxs text-muted-foreground block mb-0.5">Funded So Far</span>
-                  <span className="text-lg font-bold text-white">${invoice.currentFunding.toLocaleString()}</span>
+                  <span className="text-lg font-bold text-foreground">${invoice.currentFunding.toLocaleString()}</span>
                 </div>
                 <div>
                   <span className="text-xxs text-muted-foreground block mb-0.5">Payment Term Date</span>
-                  <span className="text-lg font-bold text-white">
+                  <span className="text-lg font-bold text-foreground">
                     {new Date(invoice.dueDate).toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' })}
                   </span>
                 </div>
                 <div>
                   <span className="text-xxs text-muted-foreground block mb-0.5">Repayment Pool Value</span>
-                  <span className="text-lg font-bold text-violet-300">${totalRepaymentAmount.toLocaleString()}</span>
+                  <span className="text-lg font-bold text-primary">${totalRepaymentAmount.toLocaleString()}</span>
                 </div>
               </div>
 
@@ -227,7 +227,7 @@ export default function InvoiceDetails() {
                   <span>Funding progress</span>
                   <span>{Math.min(100, Math.round((invoice.currentFunding / invoice.fundingGoal) * 100))}%</span>
                 </div>
-                <div className="w-full h-2 bg-white/10 rounded-full overflow-hidden">
+                <div className="w-full h-2 bg-muted rounded-full overflow-hidden">
                   <div
                     className="h-full bg-gradient-to-r from-violet-600 to-indigo-500 rounded-full"
                     style={{ width: `${(invoice.currentFunding / invoice.fundingGoal) * 100}%` }}
@@ -236,17 +236,17 @@ export default function InvoiceDetails() {
               </div>
 
               {/* PDF Document Preview block */}
-              <div className="border border-white/5 bg-white/2 rounded-lg p-5 flex items-center justify-between gap-4">
+              <div className="border border-border bg-muted rounded-lg p-5 flex items-center justify-between gap-4">
                 <div className="flex items-center gap-3">
-                  <FileText className="w-8 h-8 text-violet-400 shrink-0" />
+                  <FileText className="w-8 h-8 text-primary shrink-0" />
                   <div>
-                    <h4 className="text-xs font-bold text-white">Legal invoice Document (PDF)</h4>
+                    <h4 className="text-xs font-bold text-foreground">Legal invoice Document (PDF)</h4>
                     <p className="text-xxs text-muted-foreground">Includes proof of work, product delivery receipt and debtor audit notes.</p>
                   </div>
                 </div>
                 <button
                   onClick={() => alert('Simulated PDF Download triggered!')}
-                  className="p-2 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-muted-foreground hover:text-white transition-all cursor-pointer"
+                  className="p-2 rounded-lg bg-muted hover:bg-muted border border-border text-muted-foreground hover:text-foreground transition-all cursor-pointer"
                   title="Download File"
                 >
                   <Download className="w-4 h-4" />
@@ -256,12 +256,12 @@ export default function InvoiceDetails() {
               {/* Action buttons */}
               {error && <div className="text-xs text-rose-400 font-semibold">{error}</div>}
 
-              <div className="flex gap-3 pt-4 border-t border-white/5">
+              <div className="flex gap-3 pt-4 border-t border-border">
                 {invoice.status === 'PUBLISHED' && !isOwner && role === 'INVESTOR' && (
                   <button
                     onClick={() => handleAction('fund')}
                     disabled={isSubmitting}
-                    className="flex-1 py-2.5 bg-violet-600 hover:bg-violet-500 disabled:opacity-50 rounded-lg text-sm font-bold text-white shadow shadow-violet-600/30 flex items-center justify-center gap-1.5 cursor-pointer"
+                    className="flex-1 py-2.5 bg-primary hover:bg-primary/90 disabled:opacity-50 rounded-lg text-sm font-bold text-primary-foreground shadow shadow-violet-600/30 flex items-center justify-center gap-1.5 cursor-pointer"
                   >
                     <Coins className="w-4.5 h-4.5" />
                     {isSubmitting ? 'Processing Tx...' : 'Finance Full Amount'}
@@ -272,7 +272,7 @@ export default function InvoiceDetails() {
                   <button
                     onClick={() => handleAction('fund')}
                     disabled={isSubmitting}
-                    className="flex-1 py-2.5 bg-violet-600 hover:bg-violet-500 disabled:opacity-50 rounded-lg text-sm font-bold text-white shadow shadow-violet-600/30 flex items-center justify-center gap-1.5 cursor-pointer"
+                    className="flex-1 py-2.5 bg-primary hover:bg-primary/90 disabled:opacity-50 rounded-lg text-sm font-bold text-primary-foreground shadow shadow-violet-600/30 flex items-center justify-center gap-1.5 cursor-pointer"
                   >
                     <Coins className="w-4.5 h-4.5" />
                     {isSubmitting ? 'Processing Tx...' : 'Finance Full Amount'}
@@ -294,7 +294,7 @@ export default function InvoiceDetails() {
                   <button
                     onClick={() => handleAction('withdraw')}
                     disabled={isSubmitting}
-                    className="flex-1 py-2.5 bg-violet-600 hover:bg-violet-500 disabled:opacity-50 rounded-lg text-sm font-bold text-white shadow shadow-violet-600/30 flex items-center justify-center gap-1.5 cursor-pointer"
+                    className="flex-1 py-2.5 bg-primary hover:bg-primary/90 disabled:opacity-50 rounded-lg text-sm font-bold text-primary-foreground shadow shadow-violet-600/30 flex items-center justify-center gap-1.5 cursor-pointer"
                   >
                     <FileCheck className="w-4.5 h-4.5" />
                     {isSubmitting ? 'Processing Tx...' : 'Withdraw Returns Payout'}
@@ -317,26 +317,26 @@ export default function InvoiceDetails() {
           {/* Sidebar / Blockchain Info & Investors List */}
           <div className="space-y-6">
             {/* Blockchain Details */}
-            <div className="glass-panel p-6 rounded-xl border border-white/10 space-y-4">
-              <h3 className="text-md font-bold text-white tracking-tight border-b border-white/5 pb-2">On-Chain Audit</h3>
+            <div className="glass-panel p-6 rounded-xl border border-border space-y-4">
+              <h3 className="text-md font-bold text-foreground tracking-tight border-b border-border pb-2">On-Chain Audit</h3>
               <div className="space-y-3 text-xxs">
                 <div className="space-y-1">
                   <span className="text-muted-foreground block">Escrow Contract Address</span>
-                  <span className="font-mono text-violet-300 block truncate" title="CA345678901234567890123456789012345678901234567890123456">
+                  <span className="font-mono text-primary block truncate" title="CA345678901234567890123456789012345678901234567890123456">
                     CA345678901234567890123456789012345678901234567890123456
                   </span>
                 </div>
                 {invoice.txHash && (
                   <div className="space-y-1">
                     <span className="text-muted-foreground block">Deployment Transaction Hash</span>
-                    <span className="font-mono text-white block truncate" title={invoice.txHash}>
+                    <span className="font-mono text-foreground block truncate" title={invoice.txHash}>
                       {invoice.txHash}
                     </span>
                   </div>
                 )}
                 <div className="space-y-1">
                   <span className="text-muted-foreground block">Settlement Asset</span>
-                  <span className="font-mono text-white block font-semibold">
+                  <span className="font-mono text-foreground block font-semibold">
                     USDC (Stellar Stablecoin contract)
                   </span>
                 </div>
@@ -344,10 +344,10 @@ export default function InvoiceDetails() {
             </div>
 
             {/* Investors List */}
-            <div className="glass-panel p-6 rounded-xl border border-white/10 space-y-4">
-              <div className="flex items-center gap-2 border-b border-white/5 pb-2">
-                <Users className="w-4 h-4 text-violet-400" />
-                <h3 className="text-md font-bold text-white tracking-tight">Escrow Investors</h3>
+            <div className="glass-panel p-6 rounded-xl border border-border space-y-4">
+              <div className="flex items-center gap-2 border-b border-border pb-2">
+                <Users className="w-4 h-4 text-primary" />
+                <h3 className="text-md font-bold text-foreground tracking-tight">Escrow Investors</h3>
               </div>
 
               {!invoice.investments || invoice.investments.length === 0 ? (
@@ -355,9 +355,9 @@ export default function InvoiceDetails() {
               ) : (
                 <div className="space-y-3">
                   {invoice.investments.map((invst: any) => (
-                    <div key={invst.id} className="flex justify-between items-center text-xs border-b border-white/3 pb-2 last:border-0 last:pb-0">
+                    <div key={invst.id} className="flex justify-between items-center text-xs border-b border-border pb-2 last:border-0 last:pb-0">
                       <div>
-                        <span className="font-mono block text-white">
+                        <span className="font-mono block text-foreground">
                           {invst.investor?.walletAddress
                             ? invst.investor.walletAddress.substring(0, 6) + '...' + invst.investor.walletAddress.substring(50)
                             : invst.investorWallet.substring(0, 6) + '...' + invst.investorWallet.substring(50)}
@@ -366,7 +366,7 @@ export default function InvoiceDetails() {
                           <span className="text-xxs text-emerald-400 font-bold">Payout claimed</span>
                         )}
                       </div>
-                      <span className="font-bold text-white">${invst.amount.toLocaleString()}</span>
+                      <span className="font-bold text-foreground">${invst.amount.toLocaleString()}</span>
                     </div>
                   ))}
                 </div>

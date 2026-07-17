@@ -17,6 +17,7 @@ export default function Marketplace() {
   const [selectedInvoice, setSelectedInvoice] = useState<InvoiceType | null>(null);
   const [fundAmount, setFundAmount] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [txStatus, setTxStatus] = useState<'IDLE' | 'SIGNING' | 'PENDING_NETWORK' | 'SUCCESS'>('IDLE');
   const [error, setError] = useState<string | null>(null);
 
   // Fetch all invoices
@@ -28,6 +29,7 @@ export default function Marketplace() {
       if (!res.ok) throw new Error('Failed to fetch marketplace invoices');
       return res.json();
     },
+    refetchInterval: 5000,
   });
 
   const handleActionClick = (invoice: InvoiceType, action: 'fund' | 'pay' | 'cancel' | 'withdraw') => {
@@ -44,6 +46,7 @@ export default function Marketplace() {
 
   const executeAction = async (id: string, action: string, amount?: number) => {
     setIsSubmitting(true);
+    setTxStatus('IDLE');
     setError(null);
     try {
       let txHash = `stellar-tx-${Math.random().toString(36).substring(2, 15)}`;
@@ -59,18 +62,18 @@ export default function Marketplace() {
         } = await import('@/lib/stellar');
 
         if (action === 'fund' && amount) {
-          const result = await fundInvoiceOnChain(address, contractInvoiceId, amount);
+          const result = await fundInvoiceOnChain(address, contractInvoiceId, amount, setTxStatus);
           txHash = result.txHash;
         } else if (action === 'pay') {
           const interestAmt = invoiceObj ? (invoiceObj.fundingGoal * invoiceObj.interestRate) / 100 : 0;
           const totalRepay = invoiceObj ? invoiceObj.fundingGoal + interestAmt : 0;
-          const result = await repayInvoiceOnChain(address, contractInvoiceId, totalRepay);
+          const result = await repayInvoiceOnChain(address, contractInvoiceId, totalRepay, setTxStatus);
           txHash = result.txHash;
         } else if (action === 'cancel') {
-          const result = await cancelInvoiceOnChain(address, contractInvoiceId);
+          const result = await cancelInvoiceOnChain(address, contractInvoiceId, setTxStatus);
           txHash = result.txHash;
         } else if (action === 'withdraw') {
-          const result = await withdrawReturnOnChain(address, contractInvoiceId);
+          const result = await withdrawReturnOnChain(address, contractInvoiceId, setTxStatus);
           txHash = result.txHash;
         }
       }
@@ -126,6 +129,7 @@ export default function Marketplace() {
     } catch (err: any) {
       console.error(err);
       setError(err.message || 'Transaction failed');
+      setTxStatus('IDLE');
     } finally {
       setIsSubmitting(false);
     }
@@ -165,14 +169,14 @@ export default function Marketplace() {
 
       <main className="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
         <div>
-          <h1 className="text-3xl font-extrabold text-white tracking-tight">Financing Marketplace</h1>
+          <h1 className="text-3xl font-extrabold text-foreground tracking-tight">Financing Marketplace</h1>
           <p className="text-sm text-muted-foreground">
             Browse outstanding invoices tokenized on-chain. Finance factoring requests to earn competitive yield payouts.
           </p>
         </div>
 
         {/* Filter Controls */}
-        <div className="flex flex-col sm:flex-row gap-4 justify-between items-center bg-white/2 border border-white/5 rounded-xl p-4">
+        <div className="flex flex-col sm:flex-row gap-4 justify-between items-center bg-muted border border-border rounded-xl p-4">
           <div className="relative w-full sm:max-w-xs">
             <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
             <input
@@ -180,7 +184,7 @@ export default function Marketplace() {
               placeholder="Search by debtor company..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full pl-9 pr-4 py-2 rounded-lg bg-card border border-white/10 text-sm text-white placeholder-muted-foreground focus:border-violet-500 focus:outline-none transition-colors"
+              className="w-full pl-9 pr-4 py-2 rounded-lg bg-card border border-border text-sm text-foreground placeholder-muted-foreground focus:border-violet-500 focus:outline-none transition-colors"
             />
           </div>
 
@@ -197,8 +201,8 @@ export default function Marketplace() {
                 onClick={() => setStatusFilter(tab.value)}
                 className={`px-3 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap transition-all cursor-pointer ${
                   statusFilter === tab.value
-                    ? 'bg-violet-600 text-white shadow'
-                    : 'bg-white/5 text-muted-foreground hover:bg-white/10'
+                    ? 'bg-primary hover:bg-primary/90 text-primary-foreground shadow'
+                    : 'bg-muted text-muted-foreground hover:bg-muted'
                 }`}
               >
                 {tab.label}
@@ -211,12 +215,12 @@ export default function Marketplace() {
         {isLoading ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {[1, 2, 3].map((i) => (
-              <div key={i} className="h-72 rounded-xl border border-white/5 bg-card animate-pulse" />
+              <div key={i} className="h-72 rounded-xl border border-border bg-card animate-pulse" />
             ))}
           </div>
         ) : !filteredInvoices || filteredInvoices.length === 0 ? (
-          <div className="glass-panel rounded-xl p-12 text-center border border-white/5 space-y-2">
-            <h3 className="text-lg font-bold text-white">No invoices found</h3>
+          <div className="glass-panel rounded-xl p-12 text-center border border-border space-y-2">
+            <h3 className="text-lg font-bold text-foreground">No invoices found</h3>
             <p className="text-sm text-muted-foreground max-w-sm mx-auto">
               There are no outstanding invoices listing under this filter. Try adjusting your query or filters.
             </p>
@@ -252,26 +256,26 @@ export default function Marketplace() {
               initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.95, opacity: 0 }}
-              className="relative w-full max-w-md rounded-xl border border-white/10 bg-card p-6 shadow-2xl z-10 space-y-4"
+              className="relative w-full max-w-md rounded-xl border border-border bg-card p-6 shadow-2xl z-10 space-y-4"
             >
-              <div className="flex justify-between items-center border-b border-white/5 pb-3">
+              <div className="flex justify-between items-center border-b border-border pb-3">
                 <div>
-                  <span className="text-xxs font-mono text-violet-400">Escrow Contract: {selectedInvoice.contractInvoiceId}</span>
-                  <h3 className="text-lg font-bold text-white">Finance Invoice</h3>
+                  <span className="text-xxs font-mono text-primary">Escrow Contract: {selectedInvoice.contractInvoiceId}</span>
+                  <h3 className="text-lg font-bold text-foreground">Finance Invoice</h3>
                 </div>
                 <button
                   onClick={() => setSelectedInvoice(null)}
-                  className="p-1 rounded hover:bg-white/5 text-muted-foreground hover:text-white"
+                  className="p-1 rounded hover:bg-muted text-muted-foreground hover:text-foreground"
                 >
                   <X className="w-4 h-4" />
                 </button>
               </div>
 
               {/* Invoice Summary */}
-              <div className="bg-white/3 border border-white/5 rounded-lg p-4 space-y-2.5 text-xs text-muted-foreground">
+              <div className="bg-muted border border-border rounded-lg p-4 space-y-2.5 text-xs text-muted-foreground">
                 <div className="flex justify-between">
                   <span>Debtor Company:</span>
-                  <span className="font-bold text-white">{selectedInvoice.debtorName}</span>
+                  <span className="font-bold text-foreground">{selectedInvoice.debtorName}</span>
                 </div>
                 <div className="flex justify-between">
                   <span>Interest rate (APY):</span>
@@ -279,11 +283,11 @@ export default function Marketplace() {
                 </div>
                 <div className="flex justify-between">
                   <span>Goal:</span>
-                  <span className="font-bold text-white">${selectedInvoice.fundingGoal.toLocaleString()}</span>
+                  <span className="font-bold text-foreground">${selectedInvoice.fundingGoal.toLocaleString()}</span>
                 </div>
                 <div className="flex justify-between">
                   <span>Remaining Needed:</span>
-                  <span className="font-bold text-violet-300">
+                  <span className="font-bold text-primary">
                     ${(selectedInvoice.fundingGoal - selectedInvoice.currentFunding).toLocaleString()}
                   </span>
                 </div>
@@ -302,10 +306,10 @@ export default function Marketplace() {
                       placeholder="0.00"
                       value={fundAmount}
                       onChange={(e) => setFundAmount(e.target.value)}
-                      className="w-full pl-4 pr-16 py-2.5 rounded-lg bg-white/3 border border-white/10 text-white placeholder-muted-foreground text-sm focus:border-violet-500 focus:outline-none"
+                      className="w-full pl-4 pr-16 py-2.5 rounded-lg bg-muted border border-border text-foreground placeholder-muted-foreground text-sm focus:border-violet-500 focus:outline-none"
                       required
                     />
-                    <span className="absolute right-4 top-3 text-xxs font-bold text-violet-400">USDC</span>
+                    <span className="absolute right-4 top-3 text-xxs font-bold text-primary">USDC</span>
                   </div>
                   <span className="text-xxs text-muted-foreground block">
                     Available Balance: {balance.toLocaleString('en-US', { style: 'currency', currency: 'USD' })}
@@ -315,11 +319,11 @@ export default function Marketplace() {
                 {/* Return Calculator Display */}
                 {parseFloat(fundAmount) > 0 && (
                   <div className="p-3 bg-violet-500/5 border border-violet-500/10 rounded-lg flex items-center justify-between text-xs">
-                    <div className="flex items-center gap-1.5 text-violet-300">
+                    <div className="flex items-center gap-1.5 text-primary">
                       <Calculator className="w-3.5 h-3.5" />
                       <span>Expected Return payout:</span>
                     </div>
-                    <span className="font-bold text-white">
+                    <span className="font-bold text-foreground">
                       ${(parseFloat(fundAmount) * (1 + selectedInvoice.interestRate / 100)).toLocaleString(undefined, {
                         maximumFractionDigits: 2,
                       })}
@@ -333,17 +337,19 @@ export default function Marketplace() {
                   <button
                     type="button"
                     onClick={() => setSelectedInvoice(null)}
-                    className="px-4 py-2 border border-white/10 rounded-lg text-xs font-semibold hover:bg-white/5 cursor-pointer"
+                    className="px-4 py-2 border border-border rounded-lg text-xs font-semibold hover:bg-muted cursor-pointer"
                   >
                     Cancel
                   </button>
                   <button
                     type="submit"
                     disabled={isSubmitting}
-                    className="px-4 py-2 bg-violet-600 hover:bg-violet-500 disabled:opacity-50 rounded-lg text-xs font-semibold text-white shadow shadow-violet-600/30 flex items-center gap-1.5 cursor-pointer"
+                    className="px-4 py-2 bg-primary hover:bg-primary/90 disabled:opacity-50 rounded-lg text-xs font-semibold text-primary-foreground shadow shadow-violet-600/30 flex items-center gap-1.5 cursor-pointer"
                   >
                     <ShieldCheck className="w-4 h-4" />
-                    {isSubmitting ? 'Signing Tx...' : 'Sign & Submit'}
+                    {txStatus === 'SIGNING' ? 'Please Sign in Wallet...' : 
+                     txStatus === 'PENDING_NETWORK' ? 'Confirming on Network...' :
+                     txStatus === 'SUCCESS' ? 'Success!' : 'Sign & Submit'}
                   </button>
                 </div>
               </form>
