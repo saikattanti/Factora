@@ -1,0 +1,1 @@
+D:\Projects\Rise-In\Invoice-Factoring-and-Financing\contracts\admin-registry\target\wasm32-unknown-unknown\release\admin_registry.wasm: D:\Projects\Rise-In\Invoice-Factoring-and-Financing\contracts\admin-registry\src\lib.rs

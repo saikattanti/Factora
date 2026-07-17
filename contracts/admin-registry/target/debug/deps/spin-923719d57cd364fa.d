@@ -1,0 +1,11 @@
+D:\Projects\Rise-In\Invoice-Factoring-and-Financing\contracts\admin-registry\target\debug\deps\spin-923719d57cd364fa.d: C:\Users\saika\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\spin-0.9.9\src\lib.rs C:\Users\saika\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\spin-0.9.9\src\mutex.rs C:\Users\saika\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\spin-0.9.9\src\mutex\spin.rs C:\Users\saika\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\spin-0.9.9\src\relax.rs C:\Users\saika\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\spin-0.9.9\src\rwlock.rs
+
+D:\Projects\Rise-In\Invoice-Factoring-and-Financing\contracts\admin-registry\target\debug\deps\libspin-923719d57cd364fa.rlib: C:\Users\saika\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\spin-0.9.9\src\lib.rs C:\Users\saika\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\spin-0.9.9\src\mutex.rs C:\Users\saika\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\spin-0.9.9\src\mutex\spin.rs C:\Users\saika\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\spin-0.9.9\src\relax.rs C:\Users\saika\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\spin-0.9.9\src\rwlock.rs
+
+D:\Projects\Rise-In\Invoice-Factoring-and-Financing\contracts\admin-registry\target\debug\deps\libspin-923719d57cd364fa.rmeta: C:\Users\saika\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\spin-0.9.9\src\lib.rs C:\Users\saika\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\spin-0.9.9\src\mutex.rs C:\Users\saika\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\spin-0.9.9\src\mutex\spin.rs C:\Users\saika\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\spin-0.9.9\src\relax.rs C:\Users\saika\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\spin-0.9.9\src\rwlock.rs
+
+C:\Users\saika\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\spin-0.9.9\src\lib.rs:
+C:\Users\saika\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\spin-0.9.9\src\mutex.rs:
+C:\Users\saika\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\spin-0.9.9\src\mutex\spin.rs:
+C:\Users\saika\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\spin-0.9.9\src\relax.rs:
+C:\Users\saika\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\spin-0.9.9\src\rwlock.rs:
