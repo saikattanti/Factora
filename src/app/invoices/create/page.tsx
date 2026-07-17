@@ -31,6 +31,7 @@ export default function CreateInvoice() {
   const { isConnected, address, role, walletName } = useWallet();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [pdfFile, setPdfFile] = useState<File | null>(null);
+  const [txStatus, setTxStatus] = useState<'IDLE' | 'SIGNING' | 'PENDING_NETWORK' | 'SUCCESS'>('IDLE');
   const [isDragging, setIsDragging] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
 
@@ -95,6 +96,7 @@ export default function CreateInvoice() {
     }
 
     setIsSubmitting(true);
+    setTxStatus('IDLE');
     setSubmitError(null);
 
     try {
@@ -115,7 +117,8 @@ export default function CreateInvoice() {
           data.amount,
           bps,
           data.fundingGoal,
-          dueTimestamp
+          dueTimestamp,
+          setTxStatus
         );
         txHash = contractResult.txHash;
       }
@@ -152,6 +155,7 @@ export default function CreateInvoice() {
     } catch (err: any) {
       console.error(err);
       setSubmitError(err.message || 'Verification / Blockchain submission failed.');
+      setTxStatus('IDLE');
     } finally {
       setIsSubmitting(false);
     }
@@ -163,21 +167,21 @@ export default function CreateInvoice() {
 
       <main className="flex-grow max-w-3xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
         <div>
-          <Link href="/dashboard" className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-white transition-colors">
+          <Link href="/dashboard" className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors">
             <ArrowLeft className="w-3.5 h-3.5" />
             Back to Dashboard
           </Link>
         </div>
 
         <div className="space-y-1">
-          <h1 className="text-3xl font-extrabold text-white tracking-tight">Tokenize New Invoice</h1>
+          <h1 className="text-3xl font-extrabold text-foreground tracking-tight">Tokenize New Invoice</h1>
           <p className="text-sm text-muted-foreground">
             List an unpaid invoice. Supply debtor details, amounts, and Offered interest yields for investors.
           </p>
         </div>
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-          <div className="glass-panel rounded-xl border border-white/10 p-6 md:p-8 space-y-6">
+          <div className="glass-panel rounded-xl border border-border p-6 md:p-8 space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* Invoice ID */}
               <div className="space-y-2">
@@ -185,7 +189,7 @@ export default function CreateInvoice() {
                 <input
                   type="text"
                   {...register('contractInvoiceId')}
-                  className="w-full px-4 py-2.5 rounded-lg bg-white/3 border border-white/10 text-white placeholder-muted-foreground text-sm focus:border-violet-500 focus:outline-none"
+                  className="w-full px-4 py-2.5 rounded-lg bg-muted border border-border text-foreground placeholder-muted-foreground text-sm focus:border-violet-500 focus:outline-none"
                   placeholder="e.g. INV-205"
                 />
                 {errors.contractInvoiceId && (
@@ -199,7 +203,7 @@ export default function CreateInvoice() {
                 <input
                   type="text"
                   {...register('debtorName')}
-                  className="w-full px-4 py-2.5 rounded-lg bg-white/3 border border-white/10 text-white placeholder-muted-foreground text-sm focus:border-violet-500 focus:outline-none"
+                  className="w-full px-4 py-2.5 rounded-lg bg-muted border border-border text-foreground placeholder-muted-foreground text-sm focus:border-violet-500 focus:outline-none"
                   placeholder="e.g. Acme Corp"
                 />
                 {errors.debtorName && (
@@ -213,7 +217,7 @@ export default function CreateInvoice() {
                 <input
                   type="email"
                   {...register('debtorEmail')}
-                  className="w-full px-4 py-2.5 rounded-lg bg-white/3 border border-white/10 text-white placeholder-muted-foreground text-sm focus:border-violet-500 focus:outline-none"
+                  className="w-full px-4 py-2.5 rounded-lg bg-muted border border-border text-foreground placeholder-muted-foreground text-sm focus:border-violet-500 focus:outline-none"
                   placeholder="e.g. billing@acme.com"
                 />
                 {errors.debtorEmail && (
@@ -227,7 +231,7 @@ export default function CreateInvoice() {
                 <input
                   type="date"
                   {...register('dueDate')}
-                  className="w-full px-4 py-2.5 rounded-lg bg-white/3 border border-white/10 text-white placeholder-muted-foreground text-sm focus:border-violet-500 focus:outline-none"
+                  className="w-full px-4 py-2.5 rounded-lg bg-muted border border-border text-foreground placeholder-muted-foreground text-sm focus:border-violet-500 focus:outline-none"
                 />
                 {errors.dueDate && (
                   <span className="text-xxs text-rose-400 font-semibold">{errors.dueDate.message}</span>
@@ -241,7 +245,7 @@ export default function CreateInvoice() {
                   type="number"
                   step="0.01"
                   {...register('amount')}
-                  className="w-full px-4 py-2.5 rounded-lg bg-white/3 border border-white/10 text-white placeholder-muted-foreground text-sm focus:border-violet-500 focus:outline-none"
+                  className="w-full px-4 py-2.5 rounded-lg bg-muted border border-border text-foreground placeholder-muted-foreground text-sm focus:border-violet-500 focus:outline-none"
                   placeholder="0.00"
                 />
                 {errors.amount && (
@@ -256,7 +260,7 @@ export default function CreateInvoice() {
                   type="number"
                   step="0.01"
                   {...register('fundingGoal')}
-                  className="w-full px-4 py-2.5 rounded-lg bg-white/3 border border-white/10 text-white placeholder-muted-foreground text-sm focus:border-violet-500 focus:outline-none"
+                  className="w-full px-4 py-2.5 rounded-lg bg-muted border border-border text-foreground placeholder-muted-foreground text-sm focus:border-violet-500 focus:outline-none"
                   placeholder="Must be <= Face Value"
                 />
                 {errors.fundingGoal && (
@@ -271,7 +275,7 @@ export default function CreateInvoice() {
                   type="number"
                   step="0.1"
                   {...register('interestRate')}
-                  className="w-full px-4 py-2.5 rounded-lg bg-white/3 border border-white/10 text-white placeholder-muted-foreground text-sm focus:border-violet-500 focus:outline-none"
+                  className="w-full px-4 py-2.5 rounded-lg bg-muted border border-border text-foreground placeholder-muted-foreground text-sm focus:border-violet-500 focus:outline-none"
                   placeholder="e.g. 6.5"
                 />
                 {errors.interestRate && (
@@ -285,18 +289,18 @@ export default function CreateInvoice() {
               <label className="text-xs font-semibold text-muted-foreground block">Upload Invoice Document (PDF)</label>
               
               {pdfFile ? (
-                <div className="flex items-center justify-between p-4 bg-white/5 border border-white/10 rounded-lg">
+                <div className="flex items-center justify-between p-4 bg-muted border border-border rounded-lg">
                   <div className="flex items-center gap-2">
-                    <FileText className="w-5 h-5 text-violet-400" />
+                    <FileText className="w-5 h-5 text-primary" />
                     <div>
-                      <span className="text-xs text-white block font-semibold truncate max-w-[200px]">{pdfFile.name}</span>
+                      <span className="text-xs text-foreground block font-semibold truncate max-w-[200px]">{pdfFile.name}</span>
                       <span className="text-xxs text-muted-foreground">{(pdfFile.size / 1024).toFixed(1)} KB</span>
                     </div>
                   </div>
                   <button
                     type="button"
                     onClick={() => setPdfFile(null)}
-                    className="p-1 rounded hover:bg-white/5 text-muted-foreground hover:text-white"
+                    className="p-1 rounded hover:bg-muted text-muted-foreground hover:text-foreground"
                   >
                     <X className="w-4 h-4" />
                   </button>
@@ -307,12 +311,12 @@ export default function CreateInvoice() {
                   onDragLeave={onDragLeave}
                   onDrop={onDrop}
                   className={`border-2 border-dashed rounded-lg p-6 text-center cursor-pointer transition-colors ${
-                    isDragging ? 'border-violet-500 bg-violet-500/5' : 'border-white/10 hover:border-violet-500/50'
+                    isDragging ? 'border-violet-500 bg-violet-500/5' : 'border-border hover:border-violet-500/50'
                   }`}
                   onClick={() => document.getElementById('file-upload')?.click()}
                 >
                   <Upload className="w-8 h-8 text-muted-foreground mx-auto mb-2" />
-                  <span className="text-xs text-white block font-semibold">Click to upload or drag & drop</span>
+                  <span className="text-xs text-foreground block font-semibold">Click to upload or drag & drop</span>
                   <span className="text-xxs text-muted-foreground">PDF invoice files only (max 10MB)</span>
                   <input
                     type="file"
@@ -331,17 +335,19 @@ export default function CreateInvoice() {
           <div className="flex justify-end gap-3">
             <Link
               href="/dashboard"
-              className="px-5 py-2.5 border border-white/10 rounded-lg text-sm font-semibold hover:bg-white/5"
+              className="px-5 py-2.5 border border-border rounded-lg text-sm font-semibold hover:bg-muted"
             >
               Cancel
             </Link>
             <button
               type="submit"
               disabled={isSubmitting}
-              className="px-5 py-2.5 bg-violet-600 hover:bg-violet-500 disabled:opacity-50 rounded-lg text-sm font-bold text-white shadow shadow-violet-600/30 flex items-center gap-1.5 cursor-pointer"
+              className="px-5 py-2.5 bg-primary hover:bg-primary/90 disabled:opacity-50 rounded-lg text-sm font-bold text-primary-foreground shadow shadow-violet-600/30 flex items-center gap-1.5 cursor-pointer"
             >
               <ShieldCheck className="w-4.5 h-4.5" />
-              {isSubmitting ? 'Signing Tx...' : 'Deploy Smart Contract'}
+              {txStatus === 'SIGNING' ? 'Please Sign in Wallet...' : 
+               txStatus === 'PENDING_NETWORK' ? 'Confirming on Network...' :
+               txStatus === 'SUCCESS' ? 'Success!' : 'Deploy Smart Contract'}
             </button>
           </div>
         </form>
