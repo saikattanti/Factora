@@ -25,8 +25,8 @@ A production-ready, decentralized marketplace built on **Stellar Soroban** and *
 
 ## 🌐 Live Demo & Deployment Info
 
-- **Video Demo (Level 3):** [YouTube Demo Link Here](#) *(Replace with actual link)*
-- **Live Platform:** [https://factora-app.vercel.app](https://factora-app.vercel.app) *(Placeholder)*
+- **Video Demo (Level 3):** [▶ Watch on YouTube](https://youtu.be/8G3m5onEbNw)
+- **Live Platform:** [https://factora.saikattanti.dev](https://factora.saikattanti.dev)
 - **Invoice Factoring Contract (Testnet):** `CDJGXXABINDCQH6ZP35S2V6WFXEK2O5LINUUMWOJDPAKMWY2Q5WETGFB`
 - **Admin Registry Contract (Testnet):** `CCESJJH4JPAUP7J6Z57JUTKJEQSDPUMFICTLXHCEY7CVGGJRUMZZF5GC`
 
