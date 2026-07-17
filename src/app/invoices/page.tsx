@@ -10,14 +10,14 @@ import { Search, Filter, Coins, Check, X, Calculator, ShieldCheck } from 'lucide
 import { motion, AnimatePresence } from 'framer-motion';
 
 export default function Marketplace() {
-  const { isConnected, address, role, balance, refreshBalance } = useWallet();
+  const { isConnected, address, walletName, role, balance, refreshBalance } = useWallet();
 
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('PUBLISHED'); // Default to showing open invoices
   const [selectedInvoice, setSelectedInvoice] = useState<InvoiceType | null>(null);
   const [fundAmount, setFundAmount] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [txStatus, setTxStatus] = useState<'IDLE' | 'SIGNING' | 'PENDING_NETWORK' | 'SUCCESS'>('IDLE');
+  const [txStatus, setTxStatus] = useState<'IDLE' | 'SIGNING' | 'PENDING_NETWORK' | 'SUCCESS' | 'ERROR'>('IDLE');
   const [error, setError] = useState<string | null>(null);
 
   // Fetch all invoices
