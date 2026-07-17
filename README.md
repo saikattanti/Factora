@@ -23,6 +23,14 @@ A production-ready, decentralized marketplace built on **Stellar Soroban** and *
 
 ---
 
+## 🌐 Live Demo & Deployment Info
+
+- **Live Demo:** [https://factora-app.vercel.app](https://factora-app.vercel.app) *(Placeholder)*
+- **Contract Address (Testnet):** `CDEOSMERYZ3576U5FWEWDDCEPWNEHHKSH7VJOVPVGUC2H7RSW4X3MBP4`
+- **Example Transaction Hash:** `6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2c3d4e5f6a7b` *(Placeholder)*
+
+---
+
 ## 🏗️ Technology Stack
 
 - **Frontend:** Next.js 15 (App Router), TypeScript, Tailwind CSS v4, Framer Motion, React Hook Form, Zod, TanStack Query.
@@ -126,6 +134,15 @@ The invoice factoring contract is written in Rust and implements the following i
 cd contracts/invoice-factoring
 cargo test
 ```
+
+---
+
+## 📸 Screenshots
+
+![Landing Page View](./public/landing-page.png)
+![Dashboard View](./public/dashboard.png)
+![Marketplace View](./public/marketplace.png)
+![Analytics View](./public/analytics.png)
 
 ---
 
