@@ -14,7 +14,7 @@ export default function InvoiceDetails() {
   const params = useParams();
   const router = useRouter();
   const id = params.id as string;
-  const { isConnected, address, role, balance, refreshBalance } = useWallet();
+  const { isConnected, address, walletName, role, balance, refreshBalance } = useWallet();
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -186,7 +186,7 @@ export default function InvoiceDetails() {
                   <h1 className="text-2xl font-bold text-foreground tracking-tight">{invoice.debtorName}</h1>
                   <p className="text-xs text-muted-foreground">Debtor Billing: {invoice.debtorEmail}</p>
                 </div>
-                <span className={`text-xs font-bold border px-3 py-1 rounded-full ${statusColors[invoice.status]}`}>
+                <span className={`text-xs font-bold border px-3 py-1 rounded-full ${statusColors[invoice.status as keyof typeof statusColors] ?? 'bg-zinc-500/10 text-zinc-400'}`}>
                   {invoice.status}
                 </span>
               </div>
