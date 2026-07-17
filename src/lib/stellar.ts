@@ -49,7 +49,8 @@ export async function invokeContract(
   userAddress: string,
   contractId: string,
   functionName: string,
-  args: xdr.ScVal[]
+  args: xdr.ScVal[],
+  onStatusChange?: (status: 'SIGNING' | 'PENDING_NETWORK' | 'SUCCESS' | 'ERROR') => void
 ) {
   if (!userAddress) throw new Error('Wallet address not connected');
   if (!contractId) throw new Error('Contract address not configured in environment');
@@ -63,7 +64,7 @@ export async function invokeContract(
 
   // 3. Build basic transaction structure
   let tx: any = new TransactionBuilder(accountSource, {
-    fee: '100000', // Default max fee
+    fee: '100', // Base fee (assembleTransaction will add sim.minResourceFee)
     networkPassphrase: NETWORK_PASSPHRASE,
   })
     .addOperation(operation)
@@ -82,6 +83,7 @@ export async function invokeContract(
   const assembledTx = assembledBuilder.build();
 
   // 6. Sign transaction via Freighter Wallet extension
+  if (onStatusChange) onStatusChange('SIGNING');
   const signedResult = await signTransaction(assembledTx.toXDR(), {
     networkPassphrase: NETWORK_PASSPHRASE,
   }) as any;
@@ -100,6 +102,7 @@ export async function invokeContract(
   }
 
   // 8. Poll for transaction confirmation
+  if (onStatusChange) onStatusChange('PENDING_NETWORK');
   const txHash = response.hash;
   let status: any = response.status;
   let retries = 0;
@@ -109,6 +112,7 @@ export async function invokeContract(
     const txStatus = await rpcServer.getTransaction(txHash);
     status = txStatus.status;
     if (status === 'SUCCESS') {
+      if (onStatusChange) onStatusChange('SUCCESS');
       return { txHash, result: (txStatus as any).resultMetaXdr };
     }
     if (status === 'FAILED') {
@@ -128,7 +132,11 @@ export async function invokeContract(
  * Approve contract to spend USDC tokens from user's account.
  * Necessary before calling fund_invoice() or mark_paid().
  */
-export async function approveUSDC(userAddress: string, amount: number) {
+export async function approveUSDC(
+  userAddress: string, 
+  amount: number,
+  onStatusChange?: (status: 'SIGNING' | 'PENDING_NETWORK' | 'SUCCESS' | 'ERROR') => void
+) {
   // Convert standard amount (e.g. 500) to raw Stroops (7 decimal places in Stellar)
   const rawAmount = BigInt(Math.floor(amount * 10_000_000));
   
@@ -143,7 +151,7 @@ export async function approveUSDC(userAddress: string, amount: number) {
     nativeToScVal(expirationLedger, { type: 'u32' }),
   ];
 
-  return invokeContract(userAddress, USDC_TOKEN_ID, 'approve', args);
+  return invokeContract(userAddress, USDC_TOKEN_ID, 'approve', args, onStatusChange);
 }
 
 /**
@@ -155,7 +163,8 @@ export async function createInvoiceOnChain(
   amount: number,
   interestRateBps: number,
   fundingGoal: number,
-  dueDateTimestamp: number
+  dueDateTimestamp: number,
+  onStatusChange?: (status: 'SIGNING' | 'PENDING_NETWORK' | 'SUCCESS' | 'ERROR') => void
 ) {
   const rawAmount = BigInt(Math.floor(amount * 10_000_000));
   const rawGoal = BigInt(Math.floor(fundingGoal * 10_000_000));
@@ -169,7 +178,7 @@ export async function createInvoiceOnChain(
     nativeToScVal(dueDateTimestamp.toString(), { type: 'u64' }),
   ];
 
-  return invokeContract(userAddress, CONTRACT_ID, 'create_invoice', args);
+  return invokeContract(userAddress, CONTRACT_ID, 'create_invoice', args, onStatusChange);
 }
 
 /**
@@ -178,10 +187,11 @@ export async function createInvoiceOnChain(
 export async function fundInvoiceOnChain(
   userAddress: string,
   invoiceId: string,
-  amount: number
+  amount: number,
+  onStatusChange?: (status: 'SIGNING' | 'PENDING_NETWORK' | 'SUCCESS' | 'ERROR') => void
 ) {
   // First, approve the USDC factoring contract to transfer tokens
-  await approveUSDC(userAddress, amount);
+  await approveUSDC(userAddress, amount, onStatusChange);
 
   const rawAmount = BigInt(Math.floor(amount * 10_000_000));
 
@@ -191,7 +201,7 @@ export async function fundInvoiceOnChain(
     nativeToScVal(rawAmount.toString(), { type: 'i128' }),
   ];
 
-  return invokeContract(userAddress, CONTRACT_ID, 'fund_invoice', args);
+  return invokeContract(userAddress, CONTRACT_ID, 'fund_invoice', args, onStatusChange);
 }
 
 /**
@@ -200,17 +210,18 @@ export async function fundInvoiceOnChain(
 export async function repayInvoiceOnChain(
   userAddress: string,
   invoiceId: string,
-  totalRepaymentAmount: number
+  totalRepaymentAmount: number,
+  onStatusChange?: (status: 'SIGNING' | 'PENDING_NETWORK' | 'SUCCESS' | 'ERROR') => void
 ) {
   // First, approve the USDC factoring contract to transfer the total repayment
-  await approveUSDC(userAddress, totalRepaymentAmount);
+  await approveUSDC(userAddress, totalRepaymentAmount, onStatusChange);
 
   const args = [
     nativeToScVal(sanitizeSymbol(invoiceId), { type: 'symbol' }),
     nativeToScVal(userAddress, { type: 'address' }),
   ];
 
-  return invokeContract(userAddress, CONTRACT_ID, 'mark_paid', args);
+  return invokeContract(userAddress, CONTRACT_ID, 'mark_paid', args, onStatusChange);
 }
 
 /**
@@ -218,14 +229,15 @@ export async function repayInvoiceOnChain(
  */
 export async function withdrawReturnOnChain(
   userAddress: string,
-  invoiceId: string
+  invoiceId: string,
+  onStatusChange?: (status: 'SIGNING' | 'PENDING_NETWORK' | 'SUCCESS' | 'ERROR') => void
 ) {
   const args = [
     nativeToScVal(sanitizeSymbol(invoiceId), { type: 'symbol' }),
     nativeToScVal(userAddress, { type: 'address' }),
   ];
 
-  return invokeContract(userAddress, CONTRACT_ID, 'withdraw_return', args);
+  return invokeContract(userAddress, CONTRACT_ID, 'withdraw_return', args, onStatusChange);
 }
 
 /**
@@ -233,11 +245,12 @@ export async function withdrawReturnOnChain(
  */
 export async function cancelInvoiceOnChain(
   userAddress: string,
-  invoiceId: string
+  invoiceId: string,
+  onStatusChange?: (status: 'SIGNING' | 'PENDING_NETWORK' | 'SUCCESS' | 'ERROR') => void
 ) {
   const args = [
     nativeToScVal(sanitizeSymbol(invoiceId), { type: 'symbol' }),
   ];
 
-  return invokeContract(userAddress, CONTRACT_ID, 'cancel_invoice', args);
+  return invokeContract(userAddress, CONTRACT_ID, 'cancel_invoice', args, onStatusChange);
 }
