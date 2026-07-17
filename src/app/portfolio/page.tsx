@@ -11,7 +11,7 @@ import Link from 'next/link';
 import { motion } from 'framer-motion';
 
 export default function Portfolio() {
-  const { isConnected, address, role, balance, refreshBalance } = useWallet();
+  const { isConnected, address, walletName, role, balance, refreshBalance } = useWallet();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Fetch investments
