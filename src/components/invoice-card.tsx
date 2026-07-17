@@ -47,7 +47,7 @@ export default function InvoiceCard({
     FULLY_FUNDED: 'bg-indigo-500/10 text-indigo-400 border-indigo-500/20',
     AWAITING_PAYMENT: 'bg-purple-500/10 text-purple-400 border-purple-500/20',
     PAID: 'bg-teal-500/10 text-teal-400 border-teal-500/20',
-    COMPLETED: 'bg-violet-500/10 text-violet-400 border-violet-500/20',
+    COMPLETED: 'bg-primary/10 text-primary border-primary/20',
     CANCELLED: 'bg-rose-500/10 text-rose-400 border-rose-500/20',
   };
 
@@ -74,16 +74,16 @@ export default function InvoiceCard({
     <motion.div
       initial={{ opacity: 0, scale: 0.98 }}
       animate={{ opacity: 1, scale: 1 }}
-      className="glass-panel rounded-xl overflow-hidden flex flex-col h-full border border-white/10"
+      className="glass-panel rounded-xl overflow-hidden flex flex-col h-full border border-border"
     >
       {/* Top Section */}
       <div className="p-5 flex-1 space-y-4">
         <div className="flex justify-between items-start gap-2">
           <div className="space-y-1">
-            <span className="text-xxs font-semibold text-violet-400 font-mono tracking-wider uppercase">
+            <span className="text-xxs font-semibold text-primary font-mono tracking-wider uppercase">
               ID: {invoice.contractInvoiceId}
             </span>
-            <h4 className="text-lg font-bold text-white tracking-tight truncate max-w-[200px]" title={invoice.debtorName}>
+            <h4 className="text-lg font-bold text-foreground tracking-tight truncate max-w-[200px]" title={invoice.debtorName}>
               {invoice.debtorName}
             </h4>
           </div>
@@ -93,14 +93,14 @@ export default function InvoiceCard({
         </div>
 
         {/* Financial Metrics */}
-        <div className="grid grid-cols-2 gap-3 bg-white/3 border border-white/5 rounded-lg p-3 text-sm">
+        <div className="grid grid-cols-2 gap-3 bg-muted/50 border border-border rounded-lg p-3 text-sm">
           <div>
             <span className="text-xxs text-muted-foreground block mb-0.5">Invoice Amount</span>
-            <span className="font-bold text-white">${invoice.amount.toLocaleString()}</span>
+            <span className="font-bold text-foreground">${invoice.amount.toLocaleString()}</span>
           </div>
           <div>
             <span className="text-xxs text-muted-foreground block mb-0.5">Financing Goal</span>
-            <span className="font-bold text-violet-300">${invoice.fundingGoal.toLocaleString()}</span>
+            <span className="font-bold text-primary">${invoice.fundingGoal.toLocaleString()}</span>
           </div>
         </div>
 
@@ -111,9 +111,9 @@ export default function InvoiceCard({
               <span>Funded: ${invoice.currentFunding.toLocaleString()}</span>
               <span>{percent}%</span>
             </div>
-            <div className="w-full h-1.5 bg-white/10 rounded-full overflow-hidden">
+            <div className="w-full h-1.5 bg-muted rounded-full overflow-hidden">
               <div
-                className="h-full bg-gradient-to-r from-violet-600 to-indigo-500 rounded-full"
+                className="h-full bg-primary rounded-full"
                 style={{ width: `${percent}%` }}
               />
             </div>
@@ -124,27 +124,27 @@ export default function InvoiceCard({
         <div className="space-y-2 pt-1 text-xs">
           <div className="flex items-center justify-between text-muted-foreground">
             <span className="flex items-center gap-1.5">
-              <Percent className="w-3.5 h-3.5 text-violet-400" />
+              <Percent className="w-3.5 h-3.5 text-primary" />
               Yield Offered
             </span>
-            <span className="font-bold text-white">{invoice.interestRate}% APY</span>
+            <span className="font-bold text-foreground">{invoice.interestRate}% APY</span>
           </div>
           <div className="flex items-center justify-between text-muted-foreground">
             <span className="flex items-center gap-1.5">
-              <Clock className="w-3.5 h-3.5 text-violet-400" />
+              <Clock className="w-3.5 h-3.5 text-primary" />
               Due Date
             </span>
-            <span className="font-semibold text-white">
+            <span className="font-semibold text-foreground">
               {getDaysLeft(invoice.dueDate)}
             </span>
           </div>
           {invoice.business?.walletAddress && (
             <div className="flex items-center justify-between text-muted-foreground">
               <span className="flex items-center gap-1.5">
-                <User className="w-3.5 h-3.5 text-violet-400" />
+                <User className="w-3.5 h-3.5 text-primary" />
                 Issuer
               </span>
-              <span className="font-mono text-white text-xxs">
+              <span className="font-mono text-foreground text-xxs">
                 {invoice.business.walletAddress.substring(0, 6)}...{invoice.business.walletAddress.substring(50)}
               </span>
             </div>
@@ -153,10 +153,10 @@ export default function InvoiceCard({
       </div>
 
       {/* Action Footer */}
-      <div className="p-4 border-t border-white/5 bg-white/2 flex items-center justify-between gap-2 mt-auto">
+      <div className="p-4 border-t border-border bg-muted/20 flex items-center justify-between gap-2 mt-auto">
         <Link
           href={`/invoices/${invoice.id}`}
-          className="flex items-center gap-1 text-xxs font-bold text-violet-400 hover:text-white transition-colors py-1.5"
+          className="flex items-center gap-1 text-xxs font-bold text-primary hover:text-primary/80 transition-colors py-1.5"
         >
           View Details
           <ArrowRight className="w-3.5 h-3.5" />
@@ -167,7 +167,7 @@ export default function InvoiceCard({
             {invoice.status === 'PUBLISHED' && !isOwner && currentUserRole === 'INVESTOR' && (
               <button
                 onClick={() => onActionClick(invoice, 'fund')}
-                className="px-3 py-1.5 rounded-lg bg-violet-600 hover:bg-violet-500 text-xxs font-bold text-white shadow shadow-violet-600/20 transition-all cursor-pointer"
+                className="px-3 py-1.5 rounded-lg bg-primary hover:bg-primary/90 text-xxs font-bold text-primary-foreground shadow shadow-primary/20 transition-all cursor-pointer"
               >
                 Finance
               </button>
@@ -176,7 +176,7 @@ export default function InvoiceCard({
             {invoice.status === 'PARTIALLY_FUNDED' && !isOwner && currentUserRole === 'INVESTOR' && (
               <button
                 onClick={() => onActionClick(invoice, 'fund')}
-                className="px-3 py-1.5 rounded-lg bg-violet-600 hover:bg-violet-500 text-xxs font-bold text-white shadow shadow-violet-600/20 transition-all cursor-pointer"
+                className="px-3 py-1.5 rounded-lg bg-primary hover:bg-primary/90 text-xxs font-bold text-primary-foreground shadow shadow-primary/20 transition-all cursor-pointer"
               >
                 Finance
               </button>
@@ -194,7 +194,7 @@ export default function InvoiceCard({
             {invoice.status === 'PAID' && currentUserRole === 'INVESTOR' && (
               <button
                 onClick={() => onActionClick(invoice, 'withdraw')}
-                className="px-3 py-1.5 rounded-lg bg-violet-600 hover:bg-violet-500 text-xxs font-bold text-white shadow shadow-violet-600/20 transition-all cursor-pointer"
+                className="px-3 py-1.5 rounded-lg bg-primary hover:bg-primary/90 text-xxs font-bold text-primary-foreground shadow shadow-primary/20 transition-all cursor-pointer"
               >
                 Withdraw Payout
               </button>

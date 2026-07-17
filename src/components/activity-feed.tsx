@@ -33,7 +33,7 @@ export default function ActivityFeed() {
       case 'FUND_INVOICE':
         return <TrendingUp className="w-4 h-4 text-blue-400" />;
       case 'SWITCH_ROLE':
-        return <UserCheck className="w-4 h-4 text-violet-400" />;
+        return <UserCheck className="w-4 h-4 text-primary" />;
       case 'CLAIM_FAUCET':
         return <DollarSign className="w-4 h-4 text-amber-400" />;
       case 'INVOICE_PAID':
@@ -72,10 +72,10 @@ export default function ActivityFeed() {
       <div className="space-y-4">
         {[1, 2, 3, 4].map((i) => (
           <div key={i} className="flex gap-3 animate-pulse">
-            <div className="w-8 h-8 rounded-full bg-white/5 border border-white/10 shrink-0" />
+            <div className="w-8 h-8 rounded-full bg-muted border border-border shrink-0" />
             <div className="space-y-2 flex-1 pt-1">
-              <div className="h-3 w-1/3 bg-white/5 rounded" />
-              <div className="h-4 w-3/4 bg-white/5 rounded" />
+              <div className="h-3 w-1/3 bg-muted rounded" />
+              <div className="h-4 w-3/4 bg-muted rounded" />
             </div>
           </div>
         ))}
@@ -99,7 +99,7 @@ export default function ActivityFeed() {
             <div className="relative pb-8">
               {activityIdx !== activities.length - 1 ? (
                 <span
-                  className="absolute top-4 left-4 -ml-px h-full w-0.5 bg-white/5"
+                  className="absolute top-4 left-4 -ml-px h-full w-0.5 bg-muted"
                   aria-hidden="true"
                 />
               ) : null}
@@ -115,11 +115,11 @@ export default function ActivityFeed() {
                 </div>
                 <div className="flex-1 min-w-0 pt-1.5 flex justify-between space-x-4">
                   <div className="text-xs text-muted-foreground">
-                    <p className="font-semibold text-white mb-0.5">
+                    <p className="font-semibold text-foreground mb-0.5">
                       {activity.details}
                     </p>
                     <span>By user </span>
-                    <span className="font-mono text-xxs bg-white/5 px-1.5 py-0.5 rounded border border-white/5 text-violet-300">
+                    <span className="font-mono text-xxs bg-muted px-1.5 py-0.5 rounded border border-border text-primary">
                       {activity.user?.walletAddress
                         ? activity.user.walletAddress.substring(0, 6) +
                           '...' +

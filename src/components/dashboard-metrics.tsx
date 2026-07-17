@@ -21,17 +21,17 @@ export function MetricCard({
   isPositive = true,
   icon: Icon,
   loading = false,
-  colorClass = 'text-violet-400'
+  colorClass = 'text-primary'
 }: MetricCardProps) {
   if (loading) {
     return (
-      <div className="rounded-xl border border-white/10 bg-card p-6 relative overflow-hidden">
+      <div className="rounded-xl border border-border bg-card p-6 relative overflow-hidden">
         {/* Skeleton animation */}
         <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent -translate-x-full animate-[shimmer_1.5s_infinite]" />
         <div className="space-y-3">
-          <div className="h-4 w-24 bg-white/10 rounded" />
-          <div className="h-8 w-32 bg-white/10 rounded" />
-          <div className="h-3 w-16 bg-white/10 rounded" />
+          <div className="h-4 w-24 bg-muted rounded" />
+          <div className="h-8 w-32 bg-muted rounded" />
+          <div className="h-3 w-16 bg-muted rounded" />
         </div>
       </div>
     );
@@ -47,9 +47,9 @@ export function MetricCard({
       <div className="flex justify-between items-start">
         <div className="space-y-2">
           <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">{title}</span>
-          <h3 className="text-3xl font-bold tracking-tight text-white">{value}</h3>
+          <h3 className="text-3xl font-bold tracking-tight text-foreground">{value}</h3>
         </div>
-        <div className={`p-2.5 rounded-lg bg-white/5 border border-white/5 ${colorClass}`}>
+        <div className={`p-2.5 rounded-lg bg-muted border border-border ${colorClass}`}>
           <Icon className="w-5 h-5" />
         </div>
       </div>
@@ -96,7 +96,7 @@ export default function DashboardMetrics({ stats, loading = false }: MetricsGrid
         change="+14.2%"
         icon={Coins}
         loading={loading}
-        colorClass="text-violet-400"
+        colorClass="text-primary"
       />
       <MetricCard
         title="Total Funded"
