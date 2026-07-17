@@ -5,13 +5,13 @@ import Link from 'next/link';
 import Navbar from '@/components/navbar';
 import Footer from '@/components/footer';
 import { useWallet } from '@/context/wallet-context';
-import { motion } from 'framer-motion';
+import { motion, Variants } from 'framer-motion';
 import { Layers, Coins, Landmark, ShieldCheck, ArrowRight, Zap, CheckCircle2, ChevronDown, UserCheck } from 'lucide-react';
 
 export default function LandingPage() {
   const { isConnected, address, connect } = useWallet();
 
-  const containerVariants = {
+  const containerVariants: Variants = {
     hidden: { opacity: 0 },
     visible: {
       opacity: 1,
@@ -19,7 +19,7 @@ export default function LandingPage() {
     }
   };
 
-  const itemVariants = {
+  const itemVariants: Variants = {
     hidden: { opacity: 0, y: 30 },
     visible: {
       opacity: 1,
@@ -34,9 +34,9 @@ export default function LandingPage() {
 
       <main className="flex-grow">
         {/* Hero Section */}
-        <section className="relative pt-24 pb-20 md:pt-32 md:pb-28 overflow-hidden bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-violet-950/20 via-background to-background">
+        <section className="relative pt-24 pb-20 md:pt-32 md:pb-28 overflow-hidden bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-primary/5 via-background to-background">
           {/* Subtle grid lines in background */}
-          <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff03_1px,transparent_1px),linear-gradient(to_bottom,#ffffff03_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)] pointer-events-none" />
+          <div className="absolute inset-0 bg-[linear-gradient(to_right,#00000008_1px,transparent_1px),linear-gradient(to_bottom,#00000008_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)] pointer-events-none" />
 
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-center">
             <motion.div
@@ -46,13 +46,13 @@ export default function LandingPage() {
               className="space-y-6 max-w-4xl mx-auto"
             >
               {/* Badge */}
-              <motion.div variants={itemVariants} className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-violet-500/30 bg-violet-500/10 text-violet-300 text-xs font-bold uppercase tracking-wider">
+              <motion.div variants={itemVariants} className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-primary/30 bg-primary/10 text-primary text-xs font-bold uppercase tracking-wider">
                 <Zap className="w-3.5 h-3.5" />
                 Stellar Soroban Powered factoring
               </motion.div>
 
               {/* Headline */}
-              <motion.h1 variants={itemVariants} className="text-4xl sm:text-6xl font-black leading-tight tracking-tight text-white">
+              <motion.h1 variants={itemVariants} className="text-4xl sm:text-6xl font-black leading-tight tracking-tight text-slate-900">
                 Unlocking Liquidity by{' '}
                 <span className="text-gradient">Tokenizing Unpaid Invoices</span>
               </motion.h1>
@@ -67,7 +67,7 @@ export default function LandingPage() {
                 {isConnected ? (
                   <Link
                     href="/dashboard"
-                    className="w-full sm:w-auto flex items-center justify-center gap-2 px-8 py-3 rounded-lg bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 text-md font-bold text-white shadow-lg shadow-violet-500/25 transition-all"
+                    className="w-full sm:w-auto flex items-center justify-center gap-2 px-8 py-3 rounded-lg bg-primary hover:bg-primary/90 text-md font-bold text-primary-foreground shadow-lg shadow-primary/25 transition-all"
                   >
                     Go to Dashboard
                     <ArrowRight className="w-5 h-5" />
@@ -75,7 +75,7 @@ export default function LandingPage() {
                 ) : (
                   <button
                     onClick={() => connect('Simulated')}
-                    className="w-full sm:w-auto flex items-center justify-center gap-2 px-8 py-3 rounded-lg bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 text-md font-bold text-white shadow-lg shadow-violet-500/25 transition-all cursor-pointer"
+                    className="w-full sm:w-auto flex items-center justify-center gap-2 px-8 py-3 rounded-lg bg-primary hover:bg-primary/90 text-md font-bold text-primary-foreground shadow-lg shadow-primary/25 transition-all cursor-pointer"
                   >
                     Launch Demo Wallet
                     <ArrowRight className="w-5 h-5" />
@@ -83,7 +83,7 @@ export default function LandingPage() {
                 )}
                 <Link
                   href="/invoices"
-                  className="w-full sm:w-auto px-8 py-3 rounded-lg border border-white/10 bg-white/5 hover:bg-white/10 text-md font-bold transition-all text-center"
+                  className="w-full sm:w-auto px-8 py-3 rounded-lg border border-border bg-card hover:bg-muted text-md font-bold transition-all text-center text-foreground"
                 >
                   Browse Marketplace
                 </Link>
@@ -93,10 +93,10 @@ export default function LandingPage() {
         </section>
 
         {/* Feature Cards Grid */}
-        <section className="py-20 border-t border-white/5">
+        <section className="py-20 border-t border-border">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center max-w-2xl mx-auto mb-16 space-y-3">
-              <h2 className="text-3xl font-extrabold text-white tracking-tight sm:text-4xl">
+              <h2 className="text-3xl font-extrabold text-slate-900 tracking-tight sm:text-4xl">
                 Core Features of Factora
               </h2>
               <p className="text-muted-foreground text-md font-medium">
@@ -106,33 +106,33 @@ export default function LandingPage() {
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
               {/* Feature 1 */}
-              <div className="glass-panel p-8 rounded-xl border border-white/10 space-y-4">
-                <div className="w-12 h-12 rounded-lg bg-violet-500/10 border border-violet-500/20 text-violet-400 flex items-center justify-center">
+              <div className="glass-panel p-8 rounded-xl border border-border space-y-4">
+                <div className="w-12 h-12 rounded-lg bg-primary/10 border border-primary/20 text-primary flex items-center justify-center">
                   <Landmark className="w-6 h-6" />
                 </div>
-                <h3 className="text-xl font-bold text-white">Invoice Tokenization</h3>
+                <h3 className="text-xl font-bold text-slate-900">Invoice Tokenization</h3>
                 <p className="text-muted-foreground text-sm leading-relaxed">
                   Convert legal receivables invoices into tokenized smart contract positions, specifying principal amounts, interest yields, and payment timelines.
                 </p>
               </div>
 
               {/* Feature 2 */}
-              <div className="glass-panel p-8 rounded-xl border border-white/10 space-y-4">
+              <div className="glass-panel p-8 rounded-xl border border-border space-y-4">
                 <div className="w-12 h-12 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 flex items-center justify-center">
                   <Coins className="w-6 h-6" />
                 </div>
-                <h3 className="text-xl font-bold text-white">Liquidity Marketplace</h3>
+                <h3 className="text-xl font-bold text-slate-900">Liquidity Marketplace</h3>
                 <p className="text-muted-foreground text-sm leading-relaxed">
                   Investors browse registered invoices, evaluate debtor reputations, and supply funds. Smart contracts automatically disburse funds to the business.
                 </p>
               </div>
 
               {/* Feature 3 */}
-              <div className="glass-panel p-8 rounded-xl border border-white/10 space-y-4">
+              <div className="glass-panel p-8 rounded-xl border border-border space-y-4">
                 <div className="w-12 h-12 rounded-lg bg-blue-500/10 border border-blue-500/20 text-blue-400 flex items-center justify-center">
                   <ShieldCheck className="w-6 h-6" />
                 </div>
-                <h3 className="text-xl font-bold text-white">Soroban Escrow Pools</h3>
+                <h3 className="text-xl font-bold text-slate-900">Soroban Escrow Pools</h3>
                 <p className="text-muted-foreground text-sm leading-relaxed">
                   Payments are locked in tamper-proof Stellar smart contracts. Repayments distribute principal + yield back to fractional investors automatically.
                 </p>
@@ -142,10 +142,10 @@ export default function LandingPage() {
         </section>
 
         {/* How It Works Section */}
-        <section className="py-20 bg-white/[0.01] border-t border-white/5">
+        <section className="py-20 bg-muted/30 border-t border-border">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center max-w-2xl mx-auto mb-16 space-y-3">
-              <h2 className="text-3xl font-extrabold text-white tracking-tight sm:text-4xl">
+              <h2 className="text-3xl font-extrabold text-slate-900 tracking-tight sm:text-4xl">
                 The Factoring Process
               </h2>
               <p className="text-muted-foreground text-md">
@@ -161,10 +161,10 @@ export default function LandingPage() {
                 { step: '04', title: 'Automatic Repayment', desc: 'Debtor repays the invoice. Escrow unlocks, and investors claim principal + yield returns.' }
               ].map((item, index) => (
                 <div key={index} className="relative space-y-3 p-4">
-                  <span className="text-5xl font-black text-violet-500/20 block font-mono">
+                  <span className="text-5xl font-black text-primary/10 block font-mono">
                     {item.step}
                   </span>
-                  <h4 className="text-lg font-bold text-white">{item.title}</h4>
+                  <h4 className="text-lg font-bold text-slate-900">{item.title}</h4>
                   <p className="text-sm text-muted-foreground leading-relaxed">
                     {item.desc}
                   </p>
@@ -175,10 +175,10 @@ export default function LandingPage() {
         </section>
 
         {/* FAQ Section */}
-        <section className="py-20 border-t border-white/5">
+        <section className="py-20 border-t border-border">
           <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-12">
-              <h2 className="text-3xl font-extrabold text-white sm:text-4xl">
+              <h2 className="text-3xl font-extrabold text-slate-900 sm:text-4xl">
                 Frequently Asked Questions
               </h2>
             </div>
@@ -189,8 +189,8 @@ export default function LandingPage() {
                 { q: 'How does Stellar Soroban secure the transactions?', a: 'All funds are deposited directly into immutable smart contracts. The business cannot withdraw funds without reaching the funding goal, and investors have cryptographically secured claims on the repayment yield.' },
                 { q: 'What happens if a debtor defaults on payment?', a: 'Platform admins review delinquent invoices. Soroban smart contracts manage disputes and allow admins to approve suspension or execute insurance payouts where applicable.' }
               ].map((faq, i) => (
-                <div key={i} className="glass-panel p-6 rounded-lg border border-white/5">
-                  <h4 className="font-bold text-md text-white mb-2">{faq.q}</h4>
+                <div key={i} className="glass-panel p-6 rounded-lg border border-border">
+                  <h4 className="font-bold text-md text-slate-900 mb-2">{faq.q}</h4>
                   <p className="text-sm text-muted-foreground leading-relaxed">{faq.a}</p>
                 </div>
               ))}
