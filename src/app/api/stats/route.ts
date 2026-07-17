@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import { mockStore } from '@/lib/mock-db-store';
@@ -9,11 +10,11 @@ export async function GET(req: NextRequest) {
 
     try {
       // DB calculation
-      const allInvoices = await prisma.invoice.findMany();
-      const allInvestments = await prisma.investment.findMany({
+      const allInvoices: any[] = await prisma.invoice.findMany();
+      const allInvestments: any[] = await prisma.investment.findMany({
         include: { invoice: true },
       });
-      const allUsers = await prisma.user.findMany();
+      const allUsers: any[] = await prisma.user.findMany();
 
       const totalFactored = allInvoices.reduce((sum: number, inv: any) => sum + Number(inv.amount), 0);
       const totalFunding = allInvoices.reduce((sum: number, inv: any) => sum + Number(inv.currentFunding), 0);
@@ -28,33 +29,33 @@ export async function GET(req: NextRequest) {
 
       // Returns paid to date
       const totalReturns = allInvestments
-        .filter(i => i.withdrawn && i.invoice.status === 'COMPLETED')
-        .reduce((sum: number, i) => sum + Number(i.amount) * (Number(i.invoice.interestRate) / 100), 0);
+        .filter((i: any) => i.withdrawn && i.invoice.status === 'COMPLETED')
+        .reduce((sum: number, i: any) => sum + Number(i.amount) * (Number(i.invoice.interestRate) / 100), 0);
 
       // Filtered user-specific stats
       let userStats = null;
       if (walletAddress) {
-        const user = allUsers.find(u => u.walletAddress === walletAddress);
+        const user = allUsers.find((u: any) => u.walletAddress === walletAddress);
         if (user) {
-          const userInvestments = allInvestments.filter(i => i.investorId === user.id);
-          const myInvoices = allInvoices.filter(i => i.businessId === user.id);
+          const userInvestments = allInvestments.filter((i: any) => i.investorId === user.id);
+          const myInvoices = allInvoices.filter((i: any) => i.businessId === user.id);
 
-          const myTotalFunded = userInvestments.reduce((sum: number, i) => sum + Number(i.amount), 0);
+          const myTotalFunded = userInvestments.reduce((sum: number, i: any) => sum + Number(i.amount), 0);
           const myExpectedReturns = userInvestments.reduce(
-            (sum: number, i) => sum + Number(i.amount) * (1 + Number(i.invoice.interestRate) / 100),
+            (sum: number, i: any) => sum + Number(i.amount) * (1 + Number(i.invoice.interestRate) / 100),
             0
           );
           const myTotalWithdrawn = userInvestments
-            .filter(i => i.withdrawn)
-            .reduce((sum: number, i) => sum + Number(i.amount) * (1 + Number(i.invoice.interestRate) / 100), 0);
+            .filter((i: any) => i.withdrawn)
+            .reduce((sum: number, i: any) => sum + Number(i.amount) * (1 + Number(i.invoice.interestRate) / 100), 0);
 
           userStats = {
             totalFunded: myTotalFunded,
             expectedReturns: myExpectedReturns,
             totalWithdrawn: myTotalWithdrawn,
-            activeCount: userInvestments.filter(i => !i.withdrawn).length,
+            activeCount: userInvestments.filter((i: any) => !i.withdrawn).length,
             invoicesCount: myInvoices.length,
-            invoicesValue: myInvoices.reduce((sum: number, i) => sum + Number(i.amount), 0),
+            invoicesValue: myInvoices.reduce((sum: number, i: any) => sum + Number(i.amount), 0),
           };
         }
       }
