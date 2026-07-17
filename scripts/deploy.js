@@ -9,10 +9,12 @@ const {
   Contract,
   StrKey,
   Address,
-  scValToNative
+  scValToNative,
+  xdr,
 } = require('@stellar/stellar-sdk');
 
-const WASM_PATH = 'C:\\Users\\saika\\cargo-target\\wasm32-unknown-unknown\\release\\invoice_factoring.wasm';
+const FACTORING_WASM = 'C:\\Users\\saika\\cargo-target\\wasm32-unknown-unknown\\release\\invoice_factoring.wasm';
+const REGISTRY_WASM = path.join(__dirname, '..', 'contracts', 'admin-registry', 'target', 'wasm32-unknown-unknown', 'release', 'admin_registry.wasm');
 const ENV_PATH = path.join(__dirname, '..', '.env');
 const RPC_URL = 'https://soroban-testnet.stellar.org';
 const NETWORK_PASSPHRASE = Networks.TESTNET;
@@ -42,49 +44,16 @@ async function pollTransaction(txHash) {
   return txStatus;
 }
 
-async function deploy() {
-  console.log('🚀 Starting automated Soroban contract deployment on Testnet...');
-
-  // 1. Check if WASM exists
-  if (!fs.existsSync(WASM_PATH)) {
-    console.error(`❌ WASM binary not found at: ${WASM_PATH}. Please compile first.`);
+async function deployContract(accountObj, keypair, wasmPath, contractName) {
+  console.log(`\n📦 Deploying ${contractName}...`);
+  if (!fs.existsSync(wasmPath)) {
+    console.error(`❌ WASM binary not found at: ${wasmPath}. Please compile first.`);
     process.exit(1);
   }
-  const wasmBytes = fs.readFileSync(WASM_PATH);
-  console.log(`📦 Loaded WASM binary (${(wasmBytes.length / 1024).toFixed(2)} KB)`);
+  const wasmBytes = fs.readFileSync(wasmPath);
 
-  // 2. Generate and fund deployer account
-  const deployerKeypair = Keypair.random();
-  const deployerAddress = deployerKeypair.publicKey();
-  console.log(`🔑 Generated temporary deployer account: ${deployerAddress}`);
-
-  console.log('💧 Funding deployer account via Friendbot...');
-  const friendbotUrl = `https://friendbot.stellar.org?addr=${encodeURIComponent(deployerAddress)}`;
-  const friendbotRes = await fetch(friendbotUrl);
-  if (!friendbotRes.ok) {
-    throw new Error('Friendbot funding failed');
-  }
-  console.log('✅ Funded successfully with 10,000 Testnet XLM.');
-
-  // 3. Load account sequence
-  // Load account info from Friendbot/RPC
-  console.log('📡 Fetching deployer account details from RPC...');
-  
-  // Create an Operation to upload the WASM code
+  // Upload WASM
   const uploadOp = Operation.uploadContractWasm({ wasm: wasmBytes });
-
-  // Get account sequence
-  const horizonUrl = 'https://horizon-testnet.stellar.org';
-  const accountRes = await fetch(`${horizonUrl}/accounts/${deployerAddress}`);
-  if (!accountRes.ok) {
-    throw new Error('Failed to load account from Horizon');
-  }
-  const accountData = await accountRes.json();
-  const { Account } = require('@stellar/stellar-sdk');
-  const accountObj = new Account(deployerAddress, accountData.sequence);
-
-  // 4. Build upload WASM transaction
-  console.log('🔧 Assembling and simulating upload transaction...');
   let uploadTx = new TransactionBuilder(accountObj, {
     fee: '100000',
     networkPassphrase: NETWORK_PASSPHRASE,
@@ -93,36 +62,23 @@ async function deploy() {
     .setTimeout(60)
     .build();
 
-  // Simulate to populate footprint & gas fee
   let sim = await rpcServer.simulateTransaction(uploadTx);
   if (rpc.Api.isSimulationError(sim)) {
     throw new Error(`Upload simulation failed: ${sim.error}`);
   }
   uploadTx = rpc.assembleTransaction(uploadTx, sim).build();
-  uploadTx.sign(deployerKeypair);
+  uploadTx.sign(keypair);
 
-  console.log('📡 Submitting WASM code to Testnet ledger...');
   let sendResult = await rpcServer.sendTransaction(uploadTx);
-  if (sendResult.status === 'ERROR') {
-    throw new Error(`Transaction send error: ${JSON.stringify(sendResult.errorResultXdr)}`);
-  }
-
-  // Poll for completion
+  if (sendResult.status === 'ERROR') throw new Error(`Upload send error`);
+  
   const uploadStatus = await pollTransaction(sendResult.hash);
+  const wasmHash = uploadStatus.returnValue.bytes();
 
-  // Extract WASM Hash from metadata
-  const wasmHash = uploadStatus.returnValue.toXDR('base64');
-  // returnValue is the byte array of the WASM hash (32 bytes)
-  const wasmHashHex = Buffer.from(uploadStatus.returnValue.bytes()).toString('hex');
-  console.log(`✅ WASM uploaded. WASM Hash: 0x${wasmHashHex}`);
-
-  // Increment sequence automatically handled by TransactionBuilder.build()
-
-  // 5. Instantiate Contract
-  console.log('🔧 Assembling and simulating contract instantiation...');
+  // Create Contract
   const createOp = Operation.createCustomContract({
-    wasmHash: uploadStatus.returnValue.bytes(),
-    address: Address.fromString(deployerAddress),
+    wasmHash,
+    address: Address.fromString(keypair.publicKey()),
   });
 
   let createTx = new TransactionBuilder(accountObj, {
@@ -138,34 +94,78 @@ async function deploy() {
     throw new Error(`Instantiation simulation failed: ${sim.error}`);
   }
   createTx = rpc.assembleTransaction(createTx, sim).build();
-  createTx.sign(deployerKeypair);
+  createTx.sign(keypair);
 
-  console.log('📡 Deploying contract instance...');
   sendResult = await rpcServer.sendTransaction(createTx);
-  if (sendResult.status === 'ERROR') {
-    throw new Error(`Instantiation send error: ${JSON.stringify(sendResult.errorResultXdr)}`);
-  }
+  if (sendResult.status === 'ERROR') throw new Error(`Instantiation send error`);
 
   const instantiateStatus = await pollTransaction(sendResult.hash);
-
-  // Get Contract ID
   const contractId = scValToNative(instantiateStatus.returnValue);
-  console.log(`🎉 Success! Smart Contract deployed at ID: ${contractId}`);
+  console.log(`🎉 ${contractName} deployed at ID: ${contractId}`);
+  
+  return contractId;
+}
 
-  // 6. Update .env file
+async function deploy() {
+  console.log('🚀 Starting automated Soroban Level 3 deployment on Testnet...');
+
+  const deployerKeypair = Keypair.random();
+  const deployerAddress = deployerKeypair.publicKey();
+  console.log(`🔑 Generated temporary deployer account: ${deployerAddress}`);
+
+  console.log('💧 Funding deployer account via Friendbot...');
+  const friendbotRes = await fetch(`https://friendbot.stellar.org?addr=${encodeURIComponent(deployerAddress)}`);
+  if (!friendbotRes.ok) throw new Error('Friendbot funding failed');
+
+  const horizonUrl = 'https://horizon-testnet.stellar.org';
+  const accountRes = await fetch(`${horizonUrl}/accounts/${deployerAddress}`);
+  const accountData = await accountRes.json();
+  const { Account } = require('@stellar/stellar-sdk');
+  const accountObj = new Account(deployerAddress, accountData.sequence);
+
+  // Deploy Admin Registry
+  const registryId = await deployContract(accountObj, deployerKeypair, REGISTRY_WASM, 'Admin Registry');
+
+  // Deploy Invoice Factoring
+  const factoringId = await deployContract(accountObj, deployerKeypair, FACTORING_WASM, 'Invoice Factoring');
+
+  // We could invoke initialization here, but it's typically done by the frontend or manual script.
+  // Actually, we must do it to make the app usable out of the box!
+  // Initialize Registry
+  const registryContract = new Contract(registryId);
+  const initRegistryOp = registryContract.call("initialize", xdr.ScVal.scvAddress(Address.fromString(deployerAddress).toScAddress()));
+  
+  let initRegistryTx = new TransactionBuilder(accountObj, { fee: '100000', networkPassphrase: NETWORK_PASSPHRASE })
+    .addOperation(initRegistryOp)
+    .setTimeout(60)
+    .build();
+    
+  let sim = await rpcServer.simulateTransaction(initRegistryTx);
+  initRegistryTx = rpc.assembleTransaction(initRegistryTx, sim).build();
+  initRegistryTx.sign(deployerKeypair);
+  let res = await rpcServer.sendTransaction(initRegistryTx);
+  await pollTransaction(res.hash);
+  console.log('✅ Admin Registry initialized.');
+
+  // Update .env
   if (fs.existsSync(ENV_PATH)) {
     let envContent = fs.readFileSync(ENV_PATH, 'utf8');
-    const contractRegex = /NEXT_PUBLIC_CONTRACT_ADDRESS="[^"]*"/;
-    if (contractRegex.test(envContent)) {
-      envContent = envContent.replace(contractRegex, `NEXT_PUBLIC_CONTRACT_ADDRESS="${contractId}"`);
-    } else {
-      envContent += `\nNEXT_PUBLIC_CONTRACT_ADDRESS="${contractId}"`;
-    }
+    
+    // Replace Factoring
+    const fRegex = /NEXT_PUBLIC_CONTRACT_ADDRESS="[^"]*"/;
+    if (fRegex.test(envContent)) envContent = envContent.replace(fRegex, `NEXT_PUBLIC_CONTRACT_ADDRESS="${factoringId}"`);
+    else envContent += `\nNEXT_PUBLIC_CONTRACT_ADDRESS="${factoringId}"`;
+
+    // Replace Registry
+    const rRegex = /NEXT_PUBLIC_REGISTRY_ADDRESS="[^"]*"/;
+    if (rRegex.test(envContent)) envContent = envContent.replace(rRegex, `NEXT_PUBLIC_REGISTRY_ADDRESS="${registryId}"`);
+    else envContent += `\nNEXT_PUBLIC_REGISTRY_ADDRESS="${registryId}"`;
+
     fs.writeFileSync(ENV_PATH, envContent, 'utf8');
-    console.log('📝 Updated .env file with the new NEXT_PUBLIC_CONTRACT_ADDRESS.');
+    console.log('📝 Updated .env file with both Contract IDs.');
   }
 
-  console.log('\n🌟 Deployed successfully! Restart your dev server if needed to pick up env updates.');
+  console.log('\n🌟 Multi-contract deployment successful!');
 }
 
 deploy().catch((err) => {
