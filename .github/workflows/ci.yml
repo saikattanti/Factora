@@ -23,19 +23,19 @@ jobs:
 
       - name: Build invoice-factoring
         working-directory: ./contracts/invoice-factoring
-        run: cargo build --target wasm32-unknown-unknown --release
+        run: cargo build --locked --target wasm32-unknown-unknown --release
 
       - name: Test invoice-factoring
         working-directory: ./contracts/invoice-factoring
-        run: cargo test
+        run: cargo test --locked
 
       - name: Build admin-registry
         working-directory: ./contracts/admin-registry
-        run: cargo build --target wasm32-unknown-unknown --release
+        run: cargo build --locked --target wasm32-unknown-unknown --release
 
       - name: Test admin-registry
         working-directory: ./contracts/admin-registry
-        run: cargo test
+        run: cargo test --locked
 
   build-and-test-frontend:
     name: Build & Test Frontend
