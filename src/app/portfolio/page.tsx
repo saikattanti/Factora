@@ -23,6 +23,7 @@ export default function Portfolio() {
       return res.json();
     },
     enabled: !!address,
+    refetchInterval: 5000,
   });
 
   // Fetch user stats
@@ -34,6 +35,7 @@ export default function Portfolio() {
       return res.json();
     },
     enabled: !!address,
+    refetchInterval: 5000,
   });
 
   const handleWithdraw = async (id: string, debtor: string, amount: number) => {
@@ -102,8 +104,8 @@ export default function Portfolio() {
       <div className="flex flex-col min-h-screen">
         <Navbar />
         <main className="flex-grow flex items-center justify-center p-4">
-          <div className="glass-panel max-w-sm w-full p-8 rounded-xl border border-white/5 text-center space-y-4">
-            <h3 className="text-xl font-bold text-white">Wallet Not Connected</h3>
+          <div className="glass-panel max-w-sm w-full p-8 rounded-xl border border-border text-center space-y-4">
+            <h3 className="text-xl font-bold text-foreground">Wallet Not Connected</h3>
             <p className="text-xs text-muted-foreground">Please connect your wallet to inspect your investment portfolio.</p>
           </div>
         </main>
@@ -118,7 +120,7 @@ export default function Portfolio() {
 
       <main className="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
         <div>
-          <h1 className="text-3xl font-extrabold text-white tracking-tight">Your Investment Portfolio</h1>
+          <h1 className="text-3xl font-extrabold text-foreground tracking-tight">Your Investment Portfolio</h1>
           <p className="text-sm text-muted-foreground">
             Monitor active positions, expected APY yield earnings, and claim payouts from settled factoring pools.
           </p>
@@ -130,7 +132,7 @@ export default function Portfolio() {
             title="Total Capital Deployed"
             value={formatCurrency(userStats.totalFunded)}
             icon={Landmark}
-            colorClass="text-violet-400"
+            colorClass="text-primary"
           />
           <MetricCard
             title="Expected Yield Payouts"
@@ -154,28 +156,28 @@ export default function Portfolio() {
 
         {/* Active Positions List */}
         <div className="space-y-4">
-          <h3 className="text-xl font-bold text-white tracking-tight">Active Funding Positions</h3>
+          <h3 className="text-xl font-bold text-foreground tracking-tight">Active Funding Positions</h3>
 
           {isLoading ? (
             <div className="space-y-3">
               {[1, 2].map((i) => (
-                <div key={i} className="h-16 rounded-xl border border-white/5 bg-card animate-pulse" />
+                <div key={i} className="h-16 rounded-xl border border-border bg-card animate-pulse" />
               ))}
             </div>
           ) : !investments || investments.length === 0 ? (
-            <div className="glass-panel rounded-xl p-12 text-center border border-white/5 space-y-3">
+            <div className="glass-panel rounded-xl p-12 text-center border border-border space-y-3">
               <p className="text-sm text-muted-foreground">You do not have any active investment positions.</p>
               <Link
                 href="/invoices"
-                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-violet-600 hover:bg-violet-500 text-xs font-bold text-white transition-all"
+                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-primary hover:bg-primary/90 text-xs font-bold text-primary-foreground transition-all"
               >
                 Browse outstanding invoices
               </Link>
             </div>
           ) : (
-            <div className="glass-panel rounded-xl border border-white/10 overflow-hidden">
+            <div className="glass-panel rounded-xl border border-border overflow-hidden">
               <table className="min-w-full divide-y divide-white/5 text-sm text-left">
-                <thead className="bg-white/2 text-xxs font-bold text-muted-foreground uppercase tracking-wider">
+                <thead className="bg-muted text-xxs font-bold text-muted-foreground uppercase tracking-wider">
                   <tr>
                     <th scope="col" className="px-6 py-3">Debtor Company</th>
                     <th scope="col" className="px-6 py-3">Amount Invested</th>
@@ -185,7 +187,7 @@ export default function Portfolio() {
                     <th scope="col" className="px-6 py-3 text-right">Actions</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-white/5 text-xs text-white">
+                <tbody className="divide-y divide-white/5 text-xs text-foreground">
                   {investments.map((invst) => {
                     const invoice = invst.invoice;
                     if (!invoice) return null;
@@ -194,9 +196,9 @@ export default function Portfolio() {
                     const isRepaid = invoice.status === 'PAID';
 
                     return (
-                      <tr key={invst.id} className="hover:bg-white/1">
+                      <tr key={invst.id} className="hover:bg-muted">
                         <td className="px-6 py-4 font-semibold whitespace-nowrap">
-                          <Link href={`/invoices/${invoice.id}`} className="hover:text-violet-400 transition-colors">
+                          <Link href={`/invoices/${invoice.id}`} className="hover:text-primary transition-colors">
                             {invoice.debtorName}
                           </Link>
                         </td>
@@ -208,7 +210,7 @@ export default function Portfolio() {
                             isRepaid
                               ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
                               : invoice.status === 'COMPLETED'
-                              ? 'bg-violet-500/10 text-violet-400 border-violet-500/20'
+                              ? 'bg-primary/10 text-primary border-primary/20'
                               : 'bg-blue-500/10 text-blue-400 border-blue-500/20'
                           }`}>
                             {invoice.status}
@@ -219,7 +221,7 @@ export default function Portfolio() {
                             <button
                               onClick={() => handleWithdraw(invoice.id, invoice.debtorName, invst.amount)}
                               disabled={isSubmitting}
-                              className="px-3 py-1 rounded bg-violet-600 hover:bg-violet-500 text-xxs font-bold text-white transition-all cursor-pointer"
+                              className="px-3 py-1 rounded bg-primary hover:bg-primary/90 text-xxs font-bold text-primary-foreground transition-all cursor-pointer"
                             >
                               Withdraw returns
                             </button>

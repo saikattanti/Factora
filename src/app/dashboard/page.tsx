@@ -36,6 +36,7 @@ export default function Dashboard() {
       return res.json();
     },
     enabled: !!address && role === 'BUSINESS',
+    refetchInterval: 5000,
   });
 
   // Fetch user investments (if investor)
@@ -47,6 +48,7 @@ export default function Dashboard() {
       return res.json();
     },
     enabled: !!address && role === 'INVESTOR',
+    refetchInterval: 5000,
   });
 
   // Action triggers
@@ -83,13 +85,13 @@ export default function Dashboard() {
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="glass-panel max-w-md w-full p-8 rounded-2xl border border-white/10 text-center space-y-6 shadow-2xl"
+            className="glass-panel max-w-md w-full p-8 rounded-2xl border border-border text-center space-y-6 shadow-2xl"
           >
-            <div className="w-14 h-14 rounded-full bg-violet-500/10 border border-violet-500/20 text-violet-400 flex items-center justify-center mx-auto">
+            <div className="w-14 h-14 rounded-full bg-primary/10 border border-primary/20 text-primary flex items-center justify-center mx-auto">
               <Wallet className="w-7 h-7" />
             </div>
             <div className="space-y-2">
-              <h2 className="text-2xl font-bold text-white tracking-tight">Connect Your Wallet</h2>
+              <h2 className="text-2xl font-bold text-foreground tracking-tight">Connect Your Wallet</h2>
               <p className="text-sm text-muted-foreground leading-relaxed">
                 Please connect your Stellar wallet to access your dashboard, list new invoices, or finance receivables.
               </p>
@@ -123,12 +125,12 @@ export default function Dashboard() {
         {/* Welcome Header */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div>
-            <h1 className="text-3xl font-extrabold text-white tracking-tight">
+            <h1 className="text-3xl font-extrabold text-foreground tracking-tight">
               {role === 'BUSINESS' ? 'Business Center' : role === 'ADMIN' ? 'Admin Portal' : 'Investor Dashboard'}
             </h1>
             <p className="text-sm text-muted-foreground">
               Connected as:{' '}
-              <span className="font-mono text-violet-300">
+              <span className="font-mono text-primary">
                 {typeof address === 'string' ? `${address.substring(0, 8)}...${address.substring(address.length - 8)}` : ''}
               </span>
             </p>
@@ -137,7 +139,7 @@ export default function Dashboard() {
           {role === 'BUSINESS' && (
             <Link
               href="/invoices/create"
-              className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-violet-600 hover:bg-violet-500 text-sm font-semibold shadow hover:shadow-violet-600/30 transition-all"
+              className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-primary hover:bg-primary/90 text-sm font-semibold shadow hover:shadow-violet-600/30 transition-all"
             >
               <Plus className="w-4.5 h-4.5" />
               Tokenize Invoice
@@ -147,7 +149,7 @@ export default function Dashboard() {
           {role === 'INVESTOR' && (
             <Link
               href="/invoices"
-              className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-violet-600 hover:bg-violet-500 text-sm font-semibold shadow hover:shadow-violet-600/30 transition-all"
+              className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-primary hover:bg-primary/90 text-sm font-semibold shadow hover:shadow-violet-600/30 transition-all"
             >
               Marketplace
               <ArrowRight className="w-4.5 h-4.5" />
@@ -165,8 +167,8 @@ export default function Dashboard() {
             {role === 'BUSINESS' && (
               <div className="space-y-4">
                 <div className="flex justify-between items-center">
-                  <h3 className="text-xl font-bold text-white tracking-tight">Your Invoices</h3>
-                  <Link href="/invoices" className="text-xs font-semibold text-violet-400 hover:text-white transition-colors">
+                  <h3 className="text-xl font-bold text-foreground tracking-tight">Your Invoices</h3>
+                  <Link href="/invoices" className="text-xs font-semibold text-primary hover:text-foreground transition-colors">
                     View All Invoices
                   </Link>
                 </div>
@@ -174,15 +176,15 @@ export default function Dashboard() {
                 {invoicesLoading ? (
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     {[1, 2].map(i => (
-                      <div key={i} className="h-64 rounded-xl border border-white/5 bg-card animate-pulse" />
+                      <div key={i} className="h-64 rounded-xl border border-border bg-card animate-pulse" />
                     ))}
                   </div>
                 ) : !businessInvoices || businessInvoices.length === 0 ? (
-                  <div className="glass-panel rounded-xl p-8 text-center border border-white/5 space-y-4">
+                  <div className="glass-panel rounded-xl p-8 text-center border border-border space-y-4">
                     <p className="text-sm text-muted-foreground">You have not registered any invoices yet.</p>
                     <Link
                       href="/invoices/create"
-                      className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-violet-600 hover:bg-violet-500 text-xs font-bold text-white transition-all"
+                      className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-primary hover:bg-primary/90 text-xs font-bold text-primary-foreground transition-all"
                     >
                       Tokenize your first invoice
                     </Link>
@@ -206,8 +208,8 @@ export default function Dashboard() {
             {role === 'INVESTOR' && (
               <div className="space-y-4">
                 <div className="flex justify-between items-center">
-                  <h3 className="text-xl font-bold text-white tracking-tight">Your Active Investments</h3>
-                  <Link href="/portfolio" className="text-xs font-semibold text-violet-400 hover:text-white transition-colors">
+                  <h3 className="text-xl font-bold text-foreground tracking-tight">Your Active Investments</h3>
+                  <Link href="/portfolio" className="text-xs font-semibold text-primary hover:text-foreground transition-colors">
                     View Portfolio
                   </Link>
                 </div>
@@ -215,15 +217,15 @@ export default function Dashboard() {
                 {investmentsLoading ? (
                   <div className="space-y-3">
                     {[1, 2].map(i => (
-                      <div key={i} className="h-20 rounded-xl border border-white/5 bg-card animate-pulse" />
+                      <div key={i} className="h-20 rounded-xl border border-border bg-card animate-pulse" />
                     ))}
                   </div>
                 ) : !investments || investments.length === 0 ? (
-                  <div className="glass-panel rounded-xl p-8 text-center border border-white/5 space-y-4">
+                  <div className="glass-panel rounded-xl p-8 text-center border border-border space-y-4">
                     <p className="text-sm text-muted-foreground">No active factoring investments found.</p>
                     <Link
                       href="/invoices"
-                      className="inline-flex items-center gap-1 px-4 py-2 rounded-lg bg-violet-600/10 border border-violet-500/20 hover:bg-violet-500/20 text-xs font-bold text-violet-300 transition-all"
+                      className="inline-flex items-center gap-1 px-4 py-2 rounded-lg bg-violet-600/10 border border-primary/20 hover:bg-violet-500/20 text-xs font-bold text-primary transition-all"
                     >
                       Explore open invoices
                     </Link>
@@ -233,16 +235,16 @@ export default function Dashboard() {
                     {investments.map((invst: any) => (
                       <div
                         key={invst.id}
-                        className="glass-panel p-4 rounded-xl border border-white/5 flex items-center justify-between gap-4"
+                        className="glass-panel p-4 rounded-xl border border-border flex items-center justify-between gap-4"
                       >
                         <div className="space-y-1">
-                          <span className="text-xxs font-mono text-violet-400">ID: {invst.invoice?.contractInvoiceId}</span>
-                          <h4 className="text-sm font-bold text-white">{invst.invoice?.debtorName}</h4>
+                          <span className="text-xxs font-mono text-primary">ID: {invst.invoice?.contractInvoiceId}</span>
+                          <h4 className="text-sm font-bold text-foreground">{invst.invoice?.debtorName}</h4>
                           <span className="text-xxs text-muted-foreground">APY: {invst.invoice?.interestRate}%</span>
                         </div>
                         <div className="text-right">
                           <span className="text-xs text-muted-foreground block">Funded</span>
-                          <span className="text-sm font-extrabold text-white">${invst.amount.toLocaleString()}</span>
+                          <span className="text-sm font-extrabold text-foreground">${invst.amount.toLocaleString()}</span>
                         </div>
                       </div>
                     ))}
@@ -252,28 +254,28 @@ export default function Dashboard() {
             )}
 
             {role === 'ADMIN' && (
-              <div className="glass-panel p-6 rounded-xl border border-white/5 space-y-4">
+              <div className="glass-panel p-6 rounded-xl border border-border space-y-4">
                 <div className="flex items-center gap-3">
-                  <Shield className="w-8 h-8 text-violet-400" />
+                  <Shield className="w-8 h-8 text-primary" />
                   <div>
-                    <h4 className="text-md font-bold text-white">System Administration Panel</h4>
+                    <h4 className="text-md font-bold text-foreground">System Administration Panel</h4>
                     <p className="text-xs text-muted-foreground">Manage approvals, inspect system statistics, and audit activity logs.</p>
                   </div>
                 </div>
                 <div className="grid grid-cols-2 gap-3 pt-2">
                   <Link
                     href="/admin"
-                    className="p-4 rounded-lg bg-white/5 border border-white/5 hover:border-violet-500/30 hover:bg-white/10 text-center transition-all"
+                    className="p-4 rounded-lg bg-muted border border-border hover:border-primary/30 hover:bg-muted text-center transition-all"
                   >
-                    <Shield className="w-5 h-5 mx-auto mb-2 text-violet-400" />
-                    <span className="text-xs font-semibold text-white block">Audit Operations</span>
+                    <Shield className="w-5 h-5 mx-auto mb-2 text-primary" />
+                    <span className="text-xs font-semibold text-foreground block">Audit Operations</span>
                   </Link>
                   <Link
                     href="/analytics"
-                    className="p-4 rounded-lg bg-white/5 border border-white/5 hover:border-violet-500/30 hover:bg-white/10 text-center transition-all"
+                    className="p-4 rounded-lg bg-muted border border-border hover:border-primary/30 hover:bg-muted text-center transition-all"
                   >
-                    <BarChart3 className="w-5 h-5 mx-auto mb-2 text-violet-400" />
-                    <span className="text-xs font-semibold text-white block">View Analytics</span>
+                    <BarChart3 className="w-5 h-5 mx-auto mb-2 text-primary" />
+                    <span className="text-xs font-semibold text-foreground block">View Analytics</span>
                   </Link>
                 </div>
               </div>
@@ -281,9 +283,9 @@ export default function Dashboard() {
           </div>
 
           {/* Activity Feed Sidebar */}
-          <div className="glass-panel p-6 rounded-xl border border-white/10 h-fit space-y-6">
-            <div className="border-b border-white/5 pb-3">
-              <h3 className="text-lg font-bold text-white tracking-tight">Recent Platform Activity</h3>
+          <div className="glass-panel p-6 rounded-xl border border-border h-fit space-y-6">
+            <div className="border-b border-border pb-3">
+              <h3 className="text-lg font-bold text-foreground tracking-tight">Recent Platform Activity</h3>
               <p className="text-xxs text-muted-foreground">Live transactions streaming on-chain</p>
             </div>
             <ActivityFeed />

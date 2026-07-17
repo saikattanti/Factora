@@ -44,7 +44,7 @@ export default function Analytics() {
 
       <main className="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
         <div>
-          <h1 className="text-3xl font-extrabold text-white tracking-tight">Marketplace Analytics</h1>
+          <h1 className="text-3xl font-extrabold text-foreground tracking-tight">Marketplace Analytics</h1>
           <p className="text-sm text-muted-foreground">
             Explore platform-wide statistics, total factoring volume, investor yield distributions, and liquidity trends.
           </p>
@@ -56,7 +56,7 @@ export default function Analytics() {
             title="Factoring Transactions"
             value={stats?.invoicesCount || 4}
             icon={Coins}
-            colorClass="text-violet-400"
+            colorClass="text-primary"
             loading={isLoading}
           />
           <MetricCard
@@ -86,9 +86,9 @@ export default function Analytics() {
         {mounted && (
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             {/* Chart 1: Factoring Volume */}
-            <div className="glass-panel p-6 rounded-xl border border-white/10 space-y-4">
+            <div className="glass-panel p-6 rounded-xl border border-border space-y-4">
               <div>
-                <h3 className="text-md font-bold text-white tracking-tight">Factoring Volume & Funding</h3>
+                <h3 className="text-md font-bold text-foreground tracking-tight">Factoring Volume & Funding</h3>
                 <p className="text-xxs text-muted-foreground">Monthly total receivables tokenized vs funded capital</p>
               </div>
               <div className="h-72 w-full text-xs">
@@ -106,9 +106,9 @@ export default function Analytics() {
             </div>
 
             {/* Chart 2: Cumulative Yield */}
-            <div className="glass-panel p-6 rounded-xl border border-white/10 space-y-4">
+            <div className="glass-panel p-6 rounded-xl border border-border space-y-4">
               <div>
-                <h3 className="text-md font-bold text-white tracking-tight">Investor returns Payouts</h3>
+                <h3 className="text-md font-bold text-foreground tracking-tight">Investor returns Payouts</h3>
                 <p className="text-xxs text-muted-foreground">Cumulative APY interest returns paid back to investors</p>
               </div>
               <div className="h-72 w-full text-xs">
