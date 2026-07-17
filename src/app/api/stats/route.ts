@@ -15,16 +15,16 @@ export async function GET(req: NextRequest) {
       });
       const allUsers = await prisma.user.findMany();
 
-      const totalFactored = allInvoices.reduce((sum: number, inv) => sum + Number(inv.amount), 0);
-      const totalFunding = allInvoices.reduce((sum: number, inv) => sum + Number(inv.currentFunding), 0);
+      const totalFactored = allInvoices.reduce((sum: number, inv: any) => sum + Number(inv.amount), 0);
+      const totalFunding = allInvoices.reduce((sum: number, inv: any) => sum + Number(inv.currentFunding), 0);
       
       const activeInvestments = allInvoices
-        .filter(inv => inv.status === 'PARTIALLY_FUNDED' || inv.status === 'FULLY_FUNDED' || inv.status === 'AWAITING_PAYMENT')
-        .reduce((sum: number, inv) => sum + Number(inv.currentFunding), 0);
+        .filter((inv: any) => inv.status === 'PARTIALLY_FUNDED' || inv.status === 'FULLY_FUNDED' || inv.status === 'AWAITING_PAYMENT')
+        .reduce((sum: number, inv: any) => sum + Number(inv.currentFunding), 0);
       
       const pendingPayments = allInvoices
-        .filter(inv => inv.status === 'AWAITING_PAYMENT')
-        .reduce((sum: number, inv) => sum + Number(inv.fundingGoal) * (1 + Number(inv.interestRate) / 100), 0);
+        .filter((inv: any) => inv.status === 'AWAITING_PAYMENT')
+        .reduce((sum: number, inv: any) => sum + Number(inv.fundingGoal) * (1 + Number(inv.interestRate) / 100), 0);
 
       // Returns paid to date
       const totalReturns = allInvestments
