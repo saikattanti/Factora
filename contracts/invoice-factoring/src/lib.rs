@@ -1,53 +1,13 @@
 #![no_std]
 use soroban_sdk::{
-    contract, contracterror, contractimpl, contracttype, token, Address, Env, Symbol, Vec
+    contract, contracterror, contractimpl, token, Address, Env, Symbol, Vec, Val
 };
 
-#[contracttype]
-#[derive(Clone, Copy, Debug, Eq, PartialEq)]
-#[repr(u32)]
-pub enum InvoiceStatus {
-    Draft = 0,
-    Published = 1,
-    PartiallyFunded = 2,
-    FullyFunded = 3,
-    AwaitingPayment = 4,
-    Paid = 5,
-    Completed = 6,
-    Cancelled = 7,
-}
+mod storage;
+use storage::*;
 
-#[contracttype]
-#[derive(Clone, Debug, Eq, PartialEq)]
-pub struct Invoice {
-    pub id: Symbol,
-    pub business: Address,
-    pub amount: i128,            // Total invoice face value
-    pub interest: u32,           // Offered interest in basis points (e.g. 500 = 5%)
-    pub funding_goal: i128,      // Funding requested from investors (usually principal)
-    pub current_funding: i128,   // Funded amount so far
-    pub due_date: u64,           // Unix timestamp
-    pub status: InvoiceStatus,
-    pub funding_balance: i128,   // Funds currently held in contract
-    pub repayment_balance: i128, // Repaid funds currently held in contract
-}
-
-#[contracttype]
-#[derive(Clone, Debug, Eq, PartialEq)]
-pub struct Investment {
-    pub investor: Address,
-    pub amount: i128,
-    pub withdrawn: bool,
-}
-
-#[contracttype]
-pub enum DataKey {
-    Admin,
-    Token,
-    Invoice(Symbol),
-    InvoiceIds,
-    Investments(Symbol), // Vec<Investment>
-}
+const DAY_IN_LEDGERS: u32 = 17280;
+const THIRTY_DAYS_IN_LEDGERS: u32 = DAY_IN_LEDGERS * 30;
 
 #[contracterror]
 #[derive(Copy, Clone, Debug, Eq, PartialEq, PartialOrd, Ord)]
@@ -64,10 +24,23 @@ pub enum Error {
     DeadlinePassed = 9,
     InvestmentNotFound = 10,
     AlreadyWithdrawn = 11,
+    BusinessNotVerified = 12,
 }
 
 fn get_token(env: &Env) -> Result<Address, Error> {
     env.storage().instance().get(&DataKey::Token).ok_or(Error::NotInitialized)
+}
+
+fn get_registry(env: &Env) -> Result<Address, Error> {
+    env.storage().instance().get(&DataKey::AdminRegistry).ok_or(Error::NotInitialized)
+}
+
+fn bump_instance(env: &Env) {
+    env.storage().instance().extend_ttl(DAY_IN_LEDGERS, THIRTY_DAYS_IN_LEDGERS);
+}
+
+fn bump_invoice(env: &Env, key: &DataKey) {
+    env.storage().persistent().extend_ttl(key, DAY_IN_LEDGERS, THIRTY_DAYS_IN_LEDGERS);
 }
 
 #[contract]
@@ -75,16 +48,18 @@ pub struct InvoiceFactoringContract;
 
 #[contractimpl]
 impl InvoiceFactoringContract {
-    pub fn initialize(env: Env, admin: Address, token: Address) -> Result<(), Error> {
+    pub fn initialize(env: Env, admin: Address, token: Address, registry: Address) -> Result<(), Error> {
         if env.storage().instance().has(&DataKey::Admin) {
             return Err(Error::AlreadyInitialized);
         }
         env.storage().instance().set(&DataKey::Admin, &admin);
         env.storage().instance().set(&DataKey::Token, &token);
+        env.storage().instance().set(&DataKey::AdminRegistry, &registry);
         
         let invoice_ids: Vec<Symbol> = Vec::new(&env);
         env.storage().instance().set(&DataKey::InvoiceIds, &invoice_ids);
         
+        bump_instance(&env);
         Ok(())
     }
 
@@ -98,6 +73,17 @@ impl InvoiceFactoringContract {
         due_date: u64,
     ) -> Result<(), Error> {
         business.require_auth();
+        bump_instance(&env);
+
+        // ICC: Inter-Contract Communication to verify business
+        let registry_addr = get_registry(&env)?;
+        let mut invoke_args: Vec<Val> = Vec::new(&env);
+        invoke_args.push_back(business.to_val());
+        
+        let is_verified: bool = env.invoke_contract(&registry_addr, &Symbol::new(&env, "is_verified"), invoke_args);
+        if !is_verified {
+            return Err(Error::BusinessNotVerified);
+        }
 
         if amount <= 0 || funding_goal <= 0 || funding_goal > amount {
             return Err(Error::InvalidAmount);
@@ -109,7 +95,7 @@ impl InvoiceFactoringContract {
         }
 
         let key = DataKey::Invoice(id.clone());
-        if env.storage().instance().has(&key) {
+        if env.storage().persistent().has(&key) {
             return Err(Error::InvoiceAlreadyExists);
         }
 
@@ -126,7 +112,8 @@ impl InvoiceFactoringContract {
             repayment_balance: 0,
         };
 
-        env.storage().instance().set(&key, &invoice);
+        env.storage().persistent().set(&key, &invoice);
+        bump_invoice(&env, &key);
 
         let mut invoice_ids: Vec<Symbol> = env
             .storage()
@@ -136,21 +123,25 @@ impl InvoiceFactoringContract {
         invoice_ids.push_back(id.clone());
         env.storage().instance().set(&DataKey::InvoiceIds, &invoice_ids);
 
+        let investments_key = DataKey::Investments(id.clone());
         let investments: Vec<Investment> = Vec::new(&env);
-        env.storage().instance().set(&DataKey::Investments(id), &investments);
+        env.storage().persistent().set(&investments_key, &investments);
+        bump_invoice(&env, &investments_key);
 
         Ok(())
     }
 
     pub fn fund_invoice(env: Env, id: Symbol, investor: Address, amount: i128) -> Result<(), Error> {
         investor.require_auth();
+        bump_instance(&env);
 
         if amount <= 0 {
             return Err(Error::InvalidAmount);
         }
 
         let key = DataKey::Invoice(id.clone());
-        let mut invoice: Invoice = env.storage().instance().get(&key).ok_or(Error::InvoiceNotFound)?;
+        let mut invoice: Invoice = env.storage().persistent().get(&key).ok_or(Error::InvoiceNotFound)?;
+        bump_invoice(&env, &key);
 
         if invoice.status != InvoiceStatus::Published && invoice.status != InvoiceStatus::PartiallyFunded {
             return Err(Error::InvalidStatus);
@@ -183,14 +174,15 @@ impl InvoiceFactoringContract {
             invoice.status = InvoiceStatus::PartiallyFunded;
         }
 
-        env.storage().instance().set(&key, &invoice);
+        env.storage().persistent().set(&key, &invoice);
 
         let investments_key = DataKey::Investments(id.clone());
         let investments: Vec<Investment> = env
             .storage()
-            .instance()
+            .persistent()
             .get(&investments_key)
             .ok_or(Error::InvoiceNotFound)?;
+        bump_invoice(&env, &investments_key);
 
         let mut found = false;
         let mut updated_investments = Vec::new(&env);
@@ -212,7 +204,7 @@ impl InvoiceFactoringContract {
             });
         }
 
-        env.storage().instance().set(&investments_key, &updated_investments);
+        env.storage().persistent().set(&investments_key, &updated_investments);
 
         env.events().publish(
             (Symbol::new(&env, "invoice_funded"), id),
@@ -223,8 +215,10 @@ impl InvoiceFactoringContract {
     }
 
     pub fn cancel_invoice(env: Env, id: Symbol) -> Result<(), Error> {
+        bump_instance(&env);
         let key = DataKey::Invoice(id.clone());
-        let mut invoice: Invoice = env.storage().instance().get(&key).ok_or(Error::InvoiceNotFound)?;
+        let mut invoice: Invoice = env.storage().persistent().get(&key).ok_or(Error::InvoiceNotFound)?;
+        bump_invoice(&env, &key);
 
         invoice.business.require_auth();
 
@@ -240,9 +234,10 @@ impl InvoiceFactoringContract {
             let investments_key = DataKey::Investments(id.clone());
             let investments: Vec<Investment> = env
                 .storage()
-                .instance()
+                .persistent()
                 .get(&investments_key)
                 .unwrap_or_else(|| Vec::new(&env));
+            bump_invoice(&env, &investments_key);
 
             for inv in investments.iter() {
                 if inv.amount > 0 {
@@ -253,7 +248,7 @@ impl InvoiceFactoringContract {
         }
 
         invoice.status = InvoiceStatus::Cancelled;
-        env.storage().instance().set(&key, &invoice);
+        env.storage().persistent().set(&key, &invoice);
 
         env.events().publish((Symbol::new(&env, "invoice_cancelled"), id), ());
 
@@ -262,9 +257,11 @@ impl InvoiceFactoringContract {
 
     pub fn mark_paid(env: Env, id: Symbol, payer: Address) -> Result<(), Error> {
         payer.require_auth();
+        bump_instance(&env);
 
         let key = DataKey::Invoice(id.clone());
-        let mut invoice: Invoice = env.storage().instance().get(&key).ok_or(Error::InvoiceNotFound)?;
+        let mut invoice: Invoice = env.storage().persistent().get(&key).ok_or(Error::InvoiceNotFound)?;
+        bump_invoice(&env, &key);
 
         if invoice.status != InvoiceStatus::AwaitingPayment && invoice.status != InvoiceStatus::FullyFunded {
             return Err(Error::InvalidStatus);
@@ -282,7 +279,7 @@ impl InvoiceFactoringContract {
         invoice.repayment_balance = total_repayment;
         invoice.status = InvoiceStatus::Paid;
 
-        env.storage().instance().set(&key, &invoice);
+        env.storage().persistent().set(&key, &invoice);
 
         env.events().publish(
             (Symbol::new(&env, "invoice_paid"), id),
@@ -294,9 +291,11 @@ impl InvoiceFactoringContract {
 
     pub fn withdraw_return(env: Env, id: Symbol, investor: Address) -> Result<(), Error> {
         investor.require_auth();
+        bump_instance(&env);
 
         let key = DataKey::Invoice(id.clone());
-        let mut invoice: Invoice = env.storage().instance().get(&key).ok_or(Error::InvoiceNotFound)?;
+        let mut invoice: Invoice = env.storage().persistent().get(&key).ok_or(Error::InvoiceNotFound)?;
+        bump_invoice(&env, &key);
 
         if invoice.status != InvoiceStatus::Paid && invoice.status != InvoiceStatus::Completed {
             return Err(Error::InvalidStatus);
@@ -305,9 +304,10 @@ impl InvoiceFactoringContract {
         let investments_key = DataKey::Investments(id.clone());
         let mut investments: Vec<Investment> = env
             .storage()
-            .instance()
+            .persistent()
             .get(&investments_key)
             .ok_or(Error::InvoiceNotFound)?;
+        bump_invoice(&env, &investments_key);
 
         let mut found = false;
         let mut investor_amount = 0i128;
@@ -353,8 +353,8 @@ impl InvoiceFactoringContract {
             invoice.status = InvoiceStatus::Completed;
         }
 
-        env.storage().instance().set(&key, &invoice);
-        env.storage().instance().set(&investments_key, &updated_investments);
+        env.storage().persistent().set(&key, &invoice);
+        env.storage().persistent().set(&investments_key, &updated_investments);
 
         env.events().publish(
             (Symbol::new(&env, "return_withdrawn"), id),
@@ -366,7 +366,7 @@ impl InvoiceFactoringContract {
 
     pub fn get_invoice(env: Env, id: Symbol) -> Option<Invoice> {
         let key = DataKey::Invoice(id);
-        env.storage().instance().get(&key)
+        env.storage().persistent().get(&key)
     }
 
     pub fn get_all_invoices(env: Env) -> Vec<Invoice> {
@@ -378,7 +378,7 @@ impl InvoiceFactoringContract {
 
         let mut list = Vec::new(&env);
         for id in invoice_ids.iter() {
-            if let Some(invoice) = Self::get_invoice(env.clone(), id) {
+            if let Some(invoice) = Self::get_invoice(env.clone(), id.clone()) {
                 list.push_back(invoice);
             }
         }

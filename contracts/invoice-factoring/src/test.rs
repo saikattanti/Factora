@@ -2,9 +2,20 @@
 
 use super::*;
 use soroban_sdk::{
+    contract, contractimpl,
     testutils::{Address as _, Ledger},
-    token, Address, Env, Symbol
+    token, Address, Env, Symbol, Val, Vec
 };
+
+#[contract]
+pub struct MockRegistry;
+
+#[contractimpl]
+impl MockRegistry {
+    pub fn is_verified(env: Env, _business: Address) -> bool {
+        true
+    }
+}
 
 #[test]
 fn test_invoice_lifecycle() {
@@ -22,7 +33,9 @@ fn test_invoice_lifecycle() {
     let contract_id = env.register_contract(None, InvoiceFactoringContract);
     let client = InvoiceFactoringContractClient::new(&env, &contract_id);
 
-    client.initialize(&admin, &token_address);
+    let registry_id = env.register_contract(None, MockRegistry);
+
+    client.initialize(&admin, &token_address, &registry_id);
 
     token_admin.mint(&investor, &10_000);
     token_admin.mint(&business, &1_000);
@@ -89,7 +102,9 @@ fn test_cancel_invoice() {
     let contract_id = env.register_contract(None, InvoiceFactoringContract);
     let client = InvoiceFactoringContractClient::new(&env, &contract_id);
 
-    client.initialize(&admin, &token_address);
+    let registry_id = env.register_contract(None, MockRegistry);
+
+    client.initialize(&admin, &token_address, &registry_id);
 
     token_admin.mint(&investor, &10_000);
 
