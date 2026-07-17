@@ -31,7 +31,7 @@ export default function CreateInvoice() {
   const { isConnected, address, role, walletName } = useWallet();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [pdfFile, setPdfFile] = useState<File | null>(null);
-  const [txStatus, setTxStatus] = useState<'IDLE' | 'SIGNING' | 'PENDING_NETWORK' | 'SUCCESS'>('IDLE');
+  const [txStatus, setTxStatus] = useState<'IDLE' | 'SIGNING' | 'PENDING_NETWORK' | 'SUCCESS' | 'ERROR'>('IDLE');
   const [isDragging, setIsDragging] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
 
@@ -40,8 +40,8 @@ export default function CreateInvoice() {
     handleSubmit,
     watch,
     formState: { errors },
-  } = useForm<InvoiceFormValues>({
-    resolver: zodResolver(invoiceSchema),
+  } = useForm<InvoiceFormValues, unknown, InvoiceFormValues>({
+    resolver: zodResolver(invoiceSchema) as any,
     defaultValues: {
       contractInvoiceId: 'INV-' + Math.floor(100 + Math.random() * 900),
       interestRate: 6.5,
